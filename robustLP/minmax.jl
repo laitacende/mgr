@@ -1,6 +1,7 @@
 module robustOpt
 
     using JuMP
+    using Cbc
     """
     n - number of decision variables
     l - lower bound on decision variables
@@ -11,14 +12,11 @@ module robustOpt
     J - J[i] is the list of indices in the ith row which are uncertain
     AU - uncertainties in order dictated by J
     """
-    function minmax(l::Vector, u::Vector, b::Vector, A::Array{Array},
-        Gamma::Vector, J::Vector, AU::Array{Array})
-        n = size(x)
+    function minmax(l::Vector, u::Vector, b::Vector, A::Matrix,
+        Gamma::Vector, J::Vector, AU::Matrix)
+        n = size(l)[1]
 
-        if (size(l) != n)
-            throw("Vector l has wrong dimension")
-        end
-        if (size(u) != n)
+        if (size(u)[1] != n)
             throw("Vector u has wrong dimension")
         end
 
@@ -27,33 +25,41 @@ module robustOpt
             throw("Matrix A has wrong dimensions")
         end
 
-        if (size(AU)[2] != n || size(AU)[1] != m)
+        if (size(AU)[2] > n || size(AU)[1] > m)
             throw("Matrix AU has wrong dimensions")
         end
 
-        if (size(J)[2] != m)
+        if (size(J)[1] > m)
             throw("Vector J has wrong dimension")
         end
 
-        if (size(Gamma)[2] != m)
+        if (size(Gamma)[1] > m)
             throw("Vector Gamma has wrong dimension")
+        end
+
+        for j in 1:size(J)[1]
+            if (Gamma[j] > size(J[j])[1])
+                throw("Gamma " + string(j), " has wrong value")
+            end
         end
 
 
         model = Model(Cbc.Optimizer)
         set_attribute(model, "logLevel", 1)
-        @variable(model, l[i] <= x[i = 1:n] <= u[i])
+        @variable(model, l[i] <= x[i=1:n] <= u[i])
         @variable(model, z[1:m] >= 0)
         @variable(model, p[i in 1:m, j in J[i]] >= 0)
         @variable(model, y[1:n] >= 0)
 
         for i in 1:m
-            @constraint(model, sum{a[i, j] * x[j], j=1:n} - z[i] * Gamma[i] - sum{p[i, j], j in J[i]} >= b[i])
+            @constraint(model, sum(a[i, j] * x[j] for j in 1:n) - z[i] * Gamma[i] - sum(p[i, j] for j in J[i]) >= b[i])
         end
 
         for i in 1:m
+            k = 1
             for j in J[i]
-                @variable(model, z[i] + p[i, j] >= y[j] * AU)
+                @constraint(model, z[i] + p[i, j] >= y[j] * AU[i, k])
+                k += 1
             end
         end
 
@@ -63,15 +69,30 @@ module robustOpt
             @constraint(model, x[j] <= y[j])
         end
 
-        @setObjective(model, Min, sum{c[i] * x[i], i=1:n})
+        @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
 
-
+        optimize!(model)
+        if termination_status(model) == OPTIMAL
+           println("Solution is optimal")
+        elseif termination_status(model) == TIME_LIMIT && has_values(model)
+           println("Solution is suboptimal due to a time limit, but a primal solution is available")
+        else
+           error("The model was not solved correctly.")
+        end
+        println("  objective value = ", objective_value(model))
+        if primal_status(model) == FEASIBLE_POINT
+            for j in 1:n
+                println("  x"+ string(j) + " = ", value(x[j]))
+            end
+        end
 
     end
 
 
-    function maxmin()
+#     function maxmin()
+#
+#     end
 
-    end
 
+    minmax([1, 2], [5, 5], [1], [1 1], [1], [], Matrix{Int}(undef, 0, 0))
 end
