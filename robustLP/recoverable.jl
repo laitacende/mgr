@@ -10,7 +10,9 @@
 
     Continuous budget uncertainty
 """
-function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Union{Float}, K::Float)
+function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Matrix, Vector},
+    Gamma::Float64, K::Float64)
+
     n = size(d)[1]
 
     if (size(c)[1] != n)
@@ -51,8 +53,8 @@ function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Ma
     @variable(model, beta >= 0)
 
     for i in 1:m
-        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) = b[i])
-        @constraint(model, sum(A[i, j] * (zP[j] - zM[j]) for j in 1:n) = 0)
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) == b[i])
+        @constraint(model, sum(A[i, j] * (zP[j] - zM[j]) for j in 1:n) == 0)
     end
 
     @constraint(model, sum(zP[k] + zM[j] for j in 1:n) <= K)
