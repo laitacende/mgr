@@ -10,8 +10,8 @@
 
     Continuous budget uncertainty
 """
-function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Float64, K::Float64)
+function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Matrix, Vector},
+    Gamma::Float64, K::Float64, printModel::Bool)
 
     n = size(d)[1]
 
@@ -29,19 +29,11 @@ function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Ma
         throw("Matrix A has wrong dimensions")
     end
 
-    if (size(Gamma)[1] > m)
-        throw("Vector Gamma has wrong dimension")
-    end
 
     if (size(b)[1] != m)
         throw("Vector b has wrong dimension")
     end
 
-    for j in 1:size(J)[1]
-        if (Gamma[j] > length(J[j]))
-            throw("Gamma " + string(j), " has wrong value")
-        end
-    end
 
 
     model = Model(Cbc.Optimizer)
@@ -57,7 +49,7 @@ function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Ma
         @constraint(model, sum(A[i, j] * (zP[j] - zM[j]) for j in 1:n) == 0)
     end
 
-    @constraint(model, sum(zP[k] + zM[j] for j in 1:n) <= K)
+    @constraint(model, sum(zP[j] + zM[j] for j in 1:n) <= K)
 
     for j in 1:n
         @constraint(model, -zP[j] + zM[j] + beta + q[j] >= x[j])
@@ -65,8 +57,11 @@ function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Ma
     end
 
     @objective(model, Min, sum(d[i] * x[i] for i in 1:n) +
-    sum(c[i] * (x[i] + zP[i] - zM[i] for i in 1:n )) + beta * Gamma + sum(cU[i] * q[i] for i in 1 :n))
+    sum(c[i] * (x[i] + zP[i] - zM[i]) for i in 1:n) + beta * Gamma + sum(cU[i] * q[i] for i in 1 :n))
 
+    if (printModel)
+        println(model)
+    end
     optimize!(model)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
@@ -78,7 +73,7 @@ function recoverableMin(d::Vector, c::Vector, cu::Vector, b::Vector, A::Union{Ma
     println("  objective value = ", objective_value(model))
     if primal_status(model) == FEASIBLE_POINT
         for j in 1:n
-            println("  x", j, " = ", value(x[j]))
+            println("  x", j, " = ", value(x[j]), " y = ", value(zP[j]) - value(zM[j]) + value(x[j]))
         end
     end
 
