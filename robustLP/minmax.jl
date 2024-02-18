@@ -1,5 +1,5 @@
 """
-    Ax >= b
+    Ax <= b
     l - lower bound on decision variables
     u - upper bound on decision variables
     b - right sides vector
@@ -8,9 +8,10 @@
     Gamma - array of Gammas for rows
     J - J[i] is the list of indices in the ith row which are uncertain
     AU - uncertainties in order dictated by J
+    bounds - if there are upper and lower bounds on decision variables
 """
 function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int}}, AU::Union{Matrix, Vector})
+    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool)
     n = size(l)[1]
 
     if (size(u)[1] != n)
@@ -22,7 +23,7 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     end
 
     m = size(A)[1] # number of contraints
-    if (size(A)[2] != n)
+    if (length(size(A)) > 1 && size(A)[2] != n)
         throw("Matrix A has wrong dimensions")
     end
     if ((length(size(AU)) > 1 && size(AU)[2] > n) || size(AU)[1] > m)
@@ -50,13 +51,17 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
 
     model = Model(Cbc.Optimizer)
     set_attribute(model, "logLevel", 1)
-    @variable(model, l[i] <= x[i=1:n] <= u[i])
+    if (bounds)
+        @variable(model, l[i] <= x[i=1:n] <= u[i])
+    else
+        @variable(model, x[i=1:n] >= 0)
+    end
     @variable(model, z[1:m] >= 0)
     @variable(model, p[i in 1:m, j in J[i]] >= 0)
     @variable(model, y[1:n] >= 0)
 
     for i in 1:m
-        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - z[i] * Gamma[i] - sum(p[i, j] for j in J[i]) >= b[i])
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - z[i] * Gamma[i] - sum(p[i, j] for j in J[i]) <= b[i])
     end
 
     for i in 1:m
@@ -74,7 +79,9 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     end
 
     @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
-
+    if (printModel)
+        println(model)
+    end
     optimize!(model)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
@@ -101,9 +108,10 @@ end
     Gamma - array of Gammas for rows
     J - J[i] is the list of indices in the ith row which are uncertain
     AU - uncertainties in order dictated by J
+    bounds - if there are upper and lower bounds on decision variables
 """
 function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int}}, AU::Union{Matrix, Vector})
+    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool)
      n = size(l)[1]
 
     if (size(u)[1] != n)
@@ -115,7 +123,7 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     end
 
     m = size(A)[1] # number of contraints
-    if (size(A)[2] != n)
+    if (length(size(A)) > 1 && size(A)[2] != n)
         throw("Matrix A has wrong dimensions")
     end
     if ((length(size(AU)) > 1 && size(AU)[2] > n) || size(AU)[1] > m)
@@ -143,7 +151,12 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
 
     model = Model(Cbc.Optimizer)
     set_attribute(model, "logLevel", 1)
-    @variable(model, l[i] <= x[i=1:n] <= u[i])
+    if (bounds)
+        @variable(model, l[i] <= x[i=1:n] <= u[i])
+    else
+        @variable(model, x[i=1:n] >= 0)
+    end
+
     @variable(model, z[1:m] >= 0)
     @variable(model, p[i in 1:m, j in J[i]] >= 0)
     @variable(model, y[1:n] >= 0)
@@ -167,7 +180,9 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     end
 
     @objective(model, Max, sum(c[i] * x[i] for i in 1:n))
-
+    if (printModel)
+        println(model)
+    end
     optimize!(model)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
