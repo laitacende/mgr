@@ -61,7 +61,7 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     @variable(model, y[1:n] >= 0)
 
     for i in 1:m
-        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - z[i] * Gamma[i] - sum(p[i, j] for j in J[i]) <= b[i])
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) + z[i] * Gamma[i] + sum(p[i, j] for j in J[i]) <= b[i])
     end
 
     for i in 1:m
