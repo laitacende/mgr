@@ -47,12 +47,14 @@ using .robustOpt
 # println("  objective value = ", objective_value(model))
 #  println("x1 = ", value(x1))
 #  println("x2 = ", value(x2))
-
-d = [380, 420, 0, 0]
+g = [150.0, 200.0, 300.0]
+for t in g
+d = [10, 0, 0, 0]
 c = [380, 420, 0, 0]
-cu = [20000, 0, 0, 0]
+cu = [200, 100, 0, 0]
 b = [10000, 3500, 8500]
 A = [1 1 0 0; 1 0 1 0; 0 1 0 1]
-Gamma = 2.0
-K = 1000.0
+Gamma = t
+K = 250.0
 robustOpt.recoverableMin(d, c, cu, b, A, Gamma, K, false)
+end

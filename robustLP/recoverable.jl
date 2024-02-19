@@ -57,7 +57,7 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
     end
 
     @objective(model, Min, sum(d[i] * x[i] for i in 1:n) +
-    sum(c[i] * (x[i] + zP[i] - zM[i]) for i in 1:n) + beta * Gamma + sum(cU[i] * q[i] for i in 1 :n))
+    sum(c[i] * (x[i] + zP[i] - zM[i]) for i in 1:n) + beta * Gamma + sum(cU[i] * q[i] for i in 1:n))
 
     if (printModel)
         println(model)
@@ -73,8 +73,10 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
     println("  objective value = ", objective_value(model))
     if primal_status(model) == FEASIBLE_POINT
         for j in 1:n
-            println("  x", j, " = ", value(x[j]), " y = ", value(zP[j]) - value(zM[j]) + value(x[j]))
+            println("  x", j, " = ", value(x[j]), " y", j, " = ", value(zP[j]) - value(zM[j]) + value(x[j]))
+            println("  q",j, " = ", value(q[j]))
         end
+        println("  beta = ", value(beta))
     end
 
 end
