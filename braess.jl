@@ -1,7 +1,8 @@
 include("./robustLP/robustOpt.jl")
 
 using .robustOpt
-
+o = [1, 3, 5]
+for d in o
 c = [0, 0, 0, 0, 0, 1]
 l = [0, 0, 0, 0, 0, 0]
 u = [1, 1, 1, 1, 1, 100000000]
@@ -9,11 +10,11 @@ A = [10 50 5 50 10 -1; 1 -1 -1 0 0 0; -1 1 1 0 0 0; 0 0 1 1 -1 0; 0 0 -1 -1 1 0;
  0 1 0 0 1 0; 0 -1 0 0 -1 0;
     1 0 0 1 0 0; -1 0 0 -1 0 0]
 b = [0, 0, 0, 0, 0, 1, -1, 1, -1]
-Gamma = [1, 0, 0, 0, 0, 0, 0, 0, 0]
+Gamma = [d, 0, 0, 0, 0, 0, 0, 0, 0]
 J = [[1, 2, 3, 4, 5], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[]]
 AU = [10 30 10 30 10]
-robustOpt.minmax(c, l, u, b, A, Gamma, J, AU, true, false)
-
+# robustOpt.minmax(c, l, u, b, A, Gamma, J, AU, true, false)
+end
 # # nominal
 # using JuMP
 # using Cbc

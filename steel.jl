@@ -17,13 +17,13 @@ using .robustOpt
 # model = Model(Cbc.Optimizer)
 # @variable(model, 0 <= x1 <= 4000)
 # @variable(model, 0 <= x2 <= 6000)
-# @constraint(model, 200*x1+140*x2 <= 40*200*140)
+# @constraint(model, 120*x1+90*x2 <= 40*120*90)
 # @objective(model, Max, 30x1+ 25x2)
 # optimize!(model)
 # println("  objective value = ", objective_value(model))
 #  println("x1 = ", value(x1))
 #  println("x2 = ", value(x2))
-# c = [30, 25]
+# # c = [30, 25]
 # A = [200 140; 1 0; 0 1]
 # b = [40*200*140, 4000, 6000]
 # Gamma = [1, 0, 0]
@@ -35,18 +35,18 @@ using .robustOpt
 # end
 
 
-using JuMP
-using Cbc
-println("Nominal")
-model = Model(Cbc.Optimizer)
-@variable(model, 0 <= x1 <= 3500)
-@variable(model, 0 <= x2 <= 8500)
-@constraint(model, x1+x2 == 10000)
-@objective(model, Min, 580x1+ 520x2)
-optimize!(model)
-println("  objective value = ", objective_value(model))
- println("x1 = ", value(x1))
- println("x2 = ", value(x2))
+# using JuMP
+# using Cbc
+# println("Nominal")
+# model = Model(Cbc.Optimizer)
+# @variable(model, 0 <= x1 <= 3500)
+# @variable(model, 0 <= x2 <= 8500)
+# @constraint(model, x1+x2 == 10000)
+# @objective(model, Min, 580x1+ 520x2)
+# optimize!(model)
+# println("  objective value = ", objective_value(model))
+#  println("x1 = ", value(x1))
+#  println("x2 = ", value(x2))
 # g = [150.0, 200.0, 300.0]
 # for t in g
 # d = [10, 0, 0, 0]
