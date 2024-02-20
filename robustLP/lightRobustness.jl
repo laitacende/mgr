@@ -75,19 +75,26 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         println(model)
     end
     optimize!(model)
-    if termination_status(model) == OPTIMAL
+    #=if termination_status(model) == OPTIMAL
        println("Solution is optimal")
     elseif termination_status(model) == TIME_LIMIT && has_values(model)
        println("Solution is suboptimal due to a time limit, but a primal solution is available")
     else
        error("The model was not solved correctly.")
     end
-    println("  objective value = ", objective_value(model))
+    println("  objective value(new) = ", objective_value(model))=#
+    cost = 0
+    for j in 1:n
+        cost += c[j] * value(x[j])
+    end
+    println("  objective value  = ", cost)
     if primal_status(model) == FEASIBLE_POINT
         for j in 1:n
             println("  x", j, " = ", value(x[j]))
         end
     end
+#          println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
+#      " & ", cost, "\\\\")
 end
     """
     Ax <= b

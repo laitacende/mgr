@@ -96,6 +96,9 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
             println("  x", j, " = ", value(x[j]))
         end
     end
+
+#      println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
+#      " & ", objective_value(model), "\\\\")
 end
 
  """
