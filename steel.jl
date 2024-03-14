@@ -2,15 +2,15 @@ include("./robustLP/robustOpt.jl")
 
 using .robustOpt
 
-# c = [30, 25]
-# l = [0, 0]
-# u = [4000, 6000]
-# A = [200 140]
-# b = [40*200*140]
-# Gamma = [2]
-# J = [[1, 2]]
-# AU = [80 50]
-# robustOpt.maxmin(c, l, u, b, A, Gamma, J, AU, true, true)
+c = [30, 25]
+l = [0, 0]
+u = [4000, 6000]
+A = [200 140]
+b = [40*200*140]
+Gamma = [2]
+J = [[1, 2]]
+AU = [80 50]
+m = robustOpt.maxmin(c, l, u, b, A, Gamma, J, AU, true, true, true)
 # using JuMP
 # using Cbc
 # println("Nominal")

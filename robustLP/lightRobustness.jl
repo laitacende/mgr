@@ -7,6 +7,8 @@
     AU - uncertainties of matrix A
     rho - maximum value to distort from optimum (if val == True)
         - maximum percent to distort from optimum (if val == False)
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
 """
 function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Vector,  AU::Union{Matrix, Vector},
     rho::Float64, val::Bool, printModel::Bool)
@@ -75,28 +77,14 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         println(model)
     end
     optimize!(model)
-    #=if termination_status(model) == OPTIMAL
-       println("Solution is optimal")
-    elseif termination_status(model) == TIME_LIMIT && has_values(model)
-       println("Solution is suboptimal due to a time limit, but a primal solution is available")
-    else
-       error("The model was not solved correctly.")
+     if (printSolution)
+        printLightRobustness(model, n, x, zOpt)
     end
-    println("  objective value(new) = ", objective_value(model))=#
-    cost = 0
-    for j in 1:n
-        cost += c[j] * value(x[j])
-    end
-    println("  objective value  = ", cost)
-    if primal_status(model) == FEASIBLE_POINT
-        for j in 1:n
-            println("  x", j, " = ", value(x[j]))
-        end
-    end
+    return model, n, x, zOpt
 #          println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", cost, "\\\\")
 end
-    """
+"""
     Ax <= b
     b - right sides vector
     c - costs vector
@@ -105,9 +93,11 @@ end
     AU - uncertainties of matrix A
     rho - maximum value to distort from optimum (if val == True)
         - maximum percent to distort from optimum (if val == False)
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
 """
 function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Vector,  AU::Union{Matrix, Vector},
-    rho::Float64, val::Bool, printModel::Bool)
+    rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
 
@@ -140,8 +130,6 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     @objective(modelNom, Max, sum(c[i] * x[i] for i in 1:n))
     optimize!(modelNom)
     zOpt = objective_value(modelNom)
-    println("opt ", zOpt)
-
 
     # light robustness model
     model = Model(Cbc.Optimizer)
@@ -173,6 +161,14 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         println(model)
     end
     optimize!(model)
+
+    if (printSolution)
+        printLightRobustness(model, n, x, zOpt)
+    end
+    return model, n, x, zOpt
+end
+
+function printLightRobustness(model, n, x, zOpt)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
     elseif termination_status(model) == TIME_LIMIT && has_values(model)
@@ -180,6 +176,7 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     else
        error("The model was not solved correctly.")
     end
+    println("  nominal optimum = ", value(zOpt))
     println("  objective value (new) = ", objective_value(model))
     cost = 0
     for j in 1:n

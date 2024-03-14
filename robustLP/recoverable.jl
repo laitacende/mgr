@@ -7,11 +7,13 @@
     A - constraint matrix
     Gamma - array of Gammas for rows
     K - maximum distance of modifications
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
 
     Continuous budget uncertainty
 """
 function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Float64, K::Float64, printModel::Bool)
+    Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
     n = size(d)[1]
 
@@ -63,6 +65,13 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
         println(model)
     end
     optimize!(model)
+    if (printSolution)
+        printRecoverable(model, n, x, q, zP, zM, beta)
+    end
+    return model, n, x, q, zP, zM, beta
+end
+
+function printRecoverable(model, n, x, q, zP, zM, beta)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
     elseif termination_status(model) == TIME_LIMIT && has_values(model)
@@ -78,5 +87,4 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
         end
         println("  beta = ", value(beta))
     end
-
 end
