@@ -80,7 +80,7 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
      if (printSolution)
         printLightRobustness(model, n, x, zOpt)
     end
-    return model, n, x, zOpt
+    return model, n, x, zOpt, y, p, z
 #          println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", cost, "\\\\")
 end
@@ -165,7 +165,7 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     if (printSolution)
         printLightRobustness(model, n, x, zOpt)
     end
-    return model, n, x, zOpt
+    return model, n, x, zOpt, y, p, z
 end
 
 function printLightRobustness(model, n, x, zOpt)
@@ -176,7 +176,7 @@ function printLightRobustness(model, n, x, zOpt)
     else
        error("The model was not solved correctly.")
     end
-    println("  nominal optimum = ", value(zOpt))
+    println("  nominal optimum = ", zOpt)
     println("  objective value (new) = ", objective_value(model))
     cost = 0
     for j in 1:n

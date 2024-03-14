@@ -89,7 +89,7 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     if printSolution
         printMinmax(model, n, x)
     end
-    return model, x
+    return model, x, y, p, z
 #      println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", objective_value(model), "\\\\")
 end
@@ -186,7 +186,7 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     if printSolution
         printMinmax(model, n, x)
     end
-    return model, x
+    return model, x, y, p, z
 end
 
 
