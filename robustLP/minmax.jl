@@ -9,9 +9,12 @@
     J - J[i] is the list of indices in the ith row which are uncertain
     AU - uncertainties in order dictated by J
     bounds - if there are upper and lower bounds on decision variables
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
 """
 function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool)
+    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool,
+    printSolution::Bool)
     n = size(l)[1]
 
     if (size(u)[1] != n)
@@ -83,20 +86,10 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
         println(model)
     end
     optimize!(model)
-    if termination_status(model) == OPTIMAL
-       println("Solution is optimal")
-    elseif termination_status(model) == TIME_LIMIT && has_values(model)
-       println("Solution is suboptimal due to a time limit, but a primal solution is available")
-    else
-       error("The model was not solved correctly.")
+    if printSolution
+        printMinmax(model, n, x)
     end
-    println("  objective value = ", objective_value(model))
-    if primal_status(model) == FEASIBLE_POINT
-        for j in 1:n
-            println("  x", j, " = ", value(x[j]))
-        end
-    end
-
+    return model, x
 #      println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", objective_value(model), "\\\\")
 end
@@ -112,9 +105,12 @@ end
     J - J[i] is the list of indices in the ith row which are uncertain
     AU - uncertainties in order dictated by J
     bounds - if there are upper and lower bounds on decision variables
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
 """
 function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool)
+    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool,
+    printSolution::Bool)
      n = size(l)[1]
 
     if (size(u)[1] != n)
@@ -187,6 +183,14 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
         println(model)
     end
     optimize!(model)
+    if printSolution
+        printMinmax(model, n, x)
+    end
+    return model, x
+end
+
+
+function printMinmax(model, n, x)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
     elseif termination_status(model) == TIME_LIMIT && has_values(model)
