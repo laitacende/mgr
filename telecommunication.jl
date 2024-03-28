@@ -11,12 +11,12 @@ A = [1 -1 1 -1 0 0 0 0 0 0 1 -1 0 0;
     0 0 0 0 -1 1 1 -1 0 0 0 0 1 -1;
     0 0 0 0 0 0 -1 1 0 0 -1 1 0 0;
     -1 1 0 0 0 0 0 0 -1 1 0 0 -1 1]
-g = [2.0, 3.0]
-# for t in g
-#     Gamma = t
-#     K = 3.0
-#     robustOpt.recoverableMin(d, c, cu, b, A, Gamma, K, false)
-# end
+g = [50.0, 100.0, 200.0]
+for t in g
+    Gamma = t
+    K = 3.0
+    robustOpt.recoverableMin(d, c, cu, b, A, Gamma, K, false, true)
+end
 
 using JuMP
 using Cbc
@@ -26,11 +26,6 @@ model = Model(Cbc.Optimizer)
 for i in 1:5
     @constraint(model, sum(A[i, j] * x[j] for j in 1:14) == b[i])
 end
-# i = 1
-# while i < 14
-#     @constraint(model, x[i] == x[i + 1])
-#     global i += 2
-# end
 
 @objective(model, Min, sum(x[i]*cu[i] for i in 1:14))
 println(model)

@@ -13,7 +13,7 @@ o = [1, 3, 5]
 # Gamma = [d, 0, 0, 0, 0, 0, 0, 0, 0]
 # J = [[1, 2, 3, 4, 5], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[]]
 # AU = [5 15 5 15 5]
-# robustOpt.minmax(c, l, u, b, A, Gamma, J, AU, true, false)
+# robustOpt.minmax(c, l, u, b, A, Gamma, J, AU, true, false, true)
 # end
 # # nominal
 # using JuMP

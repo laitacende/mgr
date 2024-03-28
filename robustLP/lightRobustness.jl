@@ -11,7 +11,7 @@
     printSolution - when true the solution (decision variables) is printed
 """
 function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Vector,  AU::Union{Matrix, Vector},
-    rho::Float64, val::Bool, printModel::Bool)
+    rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
 
@@ -30,8 +30,6 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     if (size(Gamma)[1] > m)
         throw("Vector Gamma has wrong dimension")
     end
-
-
 
     # get optimal cost for nominal problem
     modelNom = Model(Cbc.Optimizer)
