@@ -6,7 +6,7 @@
     b - right sides vector
     A - constraint matrix
     Gamma - array of Gammas for rows
-    K - maximum distance of modifications
+    K - maximum distance of modifications (first vector norm)
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 
@@ -52,6 +52,81 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
     end
 
     @constraint(model, sum(zP[j] + zM[j] for j in 1:n) <= K)
+
+    for j in 1:n
+        @constraint(model, -zP[j] + zM[j] + beta + q[j] >= x[j])
+        @constraint(model, zM[j] <= x[j])
+    end
+
+    @objective(model, Min, sum(d[i] * x[i] for i in 1:n) +
+    sum(c[i] * (x[i] + zP[i] - zM[i]) for i in 1:n) + beta * Gamma + sum(cU[i] * q[i] for i in 1:n))
+
+    if (printModel)
+        println(model)
+    end
+    optimize!(model)
+    if (printSolution)
+        printRecoverable(model, n, x, q, zP, zM, beta)
+    end
+    return model, n, x, q, zP, zM, beta, objective_value(model)
+end
+
+"""
+    Ax = b
+    d - costs of initial decision (without uncertainties)
+    c - nominal costs of second stage
+    cU - uncertainties on costs vector
+    b - right sides vector
+    A - constraint matrix
+    Gamma - array of Gammas for rows
+    K - maximum distance of modifications (infinity norm)
+    printModel - when true model is printed
+    printSolution - when true the solution (decision variables) is printed
+
+    Continuous budget uncertainty
+"""
+function recoverableMinInf(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Matrix, Vector},
+    Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
+
+    n = size(d)[1]
+    println(n, " ", size(c))
+    if (size(c)[1] != n)
+        throw("Vector c has wrong dimension")
+    end
+
+    if (size(cU)[1] != n)
+        throw("Vector cU has wrong dimension")
+    end
+
+
+    m = size(A)[1] # number of contraints
+    if (size(A)[2] != n)
+        throw("Matrix A has wrong dimensions")
+    end
+
+
+    if (size(b)[1] != m)
+        throw("Vector b has wrong dimension")
+    end
+
+
+
+    model = Model(Cbc.Optimizer)
+    set_attribute(model, "logLevel", 0)
+    @variable(model, x[1:n] >= 0)
+    @variable(model, zP[1:n] >= 0)
+    @variable(model, zM[1:n] >= 0)
+    @variable(model, q[1:n] >= 0)
+    @variable(model, beta >= 0)
+
+    for i in 1:m
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) == b[i])
+        @constraint(model, sum(A[i, j] * (zP[j] - zM[j]) for j in 1:n) == 0)
+    end
+
+    for i in 1:n
+        @constraint(model, zP[i] + zM[i] <= K)
+    end
 
     for j in 1:n
         @constraint(model, -zP[j] + zM[j] + beta + q[j] >= x[j])
