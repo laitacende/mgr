@@ -33,7 +33,7 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
 
     # get optimal cost for nominal problem
     modelNom = Model(Cbc.Optimizer)
-    set_attribute(modelNom, "logLevel", 1)
+    set_attribute(modelNom, "logLevel", 0)
     @variable(modelNom, x[i=1:n] >= 0)
 
     for i in 1:m
@@ -47,8 +47,8 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
 
     # light robustness model
     model = Model(Cbc.Optimizer)
-    set_attribute(model, "logLevel", 1)
-    @variable(model, x[i=1:n] >= 0)
+    set_attribute(model, "logLevel", 0)
+    @variable(model, x[1:n] >= 0)
     @variable(model, z[1:m] >= 0)
     @variable(model, p[i in 1:m, j in 1:n] >= 0)
     @variable(model, y[1:m] >= 0)
@@ -75,10 +75,14 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         println(model)
     end
     optimize!(model)
+    cost = 0
+    for j in 1:n
+        cost += c[j] * value(x[j])
+    end
      if (printSolution)
         printLightRobustness(model, n, x, zOpt)
     end
-    return model, n, x, zOpt, y, p, z
+    return model, n, x, zOpt, y, p, z, cost
 #          println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", cost, "\\\\")
 end
@@ -159,11 +163,14 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         println(model)
     end
     optimize!(model)
-
+    cost = 0
+    for j in 1:n
+        cost += c[j] * value(x[j])
+    end
     if (printSolution)
         printLightRobustness(model, n, x, zOpt)
     end
-    return model, n, x, zOpt, y, p, z
+    return model, n, x, zOpt, y, p, z, cost
 end
 
 function printLightRobustness(model, n, x, zOpt)

@@ -55,7 +55,7 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
 
 
     model = Model(Cbc.Optimizer)
-    set_attribute(model, "logLevel", 1)
+    set_attribute(model, "logLevel", 0)
     if (bounds)
         @variable(model, l[i] <= x[i=1:n] <= u[i])
     else

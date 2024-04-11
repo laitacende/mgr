@@ -16,7 +16,7 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
     n = size(d)[1]
-
+    println(n, " ", size(c))
     if (size(c)[1] != n)
         throw("Vector c has wrong dimension")
     end
@@ -39,7 +39,7 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
 
 
     model = Model(Cbc.Optimizer)
-    set_attribute(model, "logLevel", 1)
+    set_attribute(model, "logLevel", 0)
     @variable(model, x[1:n] >= 0)
     @variable(model, zP[1:n] >= 0)
     @variable(model, zM[1:n] >= 0)
@@ -68,7 +68,7 @@ function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Ma
     if (printSolution)
         printRecoverable(model, n, x, q, zP, zM, beta)
     end
-    return model, n, x, q, zP, zM, beta
+    return model, n, x, q, zP, zM, beta, objective_value(model)
 end
 
 function printRecoverable(model, n, x, q, zP, zM, beta)
