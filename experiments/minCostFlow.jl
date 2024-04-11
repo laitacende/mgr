@@ -3,7 +3,7 @@ include("../robustLP/robustOpt.jl")
 using .robustOpt
 
 using Random, SparseArrays, Distributions, LinearAlgebra
-
+# losuję nominalne i kilka serii dla losowych scenariuszy
 
 # generate graph
 
