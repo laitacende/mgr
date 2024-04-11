@@ -41,9 +41,9 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
     if (size(B)[1] != m)
         throw("Matrix B has wrong dimensions")
     end
-    if (length(size(B)) > 1 && size(B)[2] != n)
-        throw("Matrix B has wrong dimensions")
-    end
+#     if (length(size(B)) > 1 && size(B)[2] != n)
+#         throw("Matrix B has wrong dimensions")
+#     end
 
     if (size(b)[1] != m)
         throw("Vector b has wrong dimension")
@@ -63,7 +63,7 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
         end
     end
 
-
+    n2 = size(B)[2]
     model = Model(Cbc.Optimizer)
     set_attribute(model, "logLevel", 1)
     if (bounds)
@@ -74,14 +74,17 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
     @variable(model, z[1:m] >= 0)
     @variable(model, p[i in 1:m, j in J[i]] >= 0)
     @variable(model, y[1:n] >= 0)
-    @variable(model, d[1:n] >= 0)
-    @variable(model, q[i in 1:m, j in J[i]])
+    @variable(model, d[1:n2] >= 0)
+    @variable(model, q[i in 1:n2, j in J[i]])
 
     for i in 1:m
         @constraint(model, sum(A[i, j] * x[j] for j in 1:n) + z[i] * Gamma[i] + sum(p[i, j] for j in J[i])
-        + sum(B[i,j] * d[j] for j in 1:n) <= b[i])
+        + sum(B[i,j] * d[j] for j in 1:n2) <= b[i])
     end
 
+
+
+#  TODO
     for i in 1:m
         k = 1
         for j in J[i]
