@@ -17,8 +17,7 @@
 """
 function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
     B::Union{Matrix, Vector}, Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector},
-    bounds::Bool, printModel::Bool,
-    printSolution::Bool)
+    bounds::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(l)[1]
 
@@ -41,9 +40,8 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
     if (size(B)[1] != m)
         throw("Matrix B has wrong dimensions")
     end
-#     if (length(size(B)) > 1 && size(B)[2] != n)
-#         throw("Matrix B has wrong dimensions")
-#     end
+
+    k = size(B)[2]
 
     if (size(b)[1] != m)
         throw("Vector b has wrong dimension")
@@ -63,7 +61,6 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
         end
     end
 
-    n2 = size(B)[2]
     model = Model(Cbc.Optimizer)
     set_attribute(model, "logLevel", 1)
     if (bounds)
@@ -74,22 +71,20 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
     @variable(model, z[1:m] >= 0)
     @variable(model, p[i in 1:m, j in J[i]] >= 0)
     @variable(model, y[1:n] >= 0)
-    @variable(model, d[1:n2] >= 0)
-    @variable(model, q[i in 1:n2, j in J[i]])
+    @variable(model, d[1:k] >= 0)
+    @variable(model, q[i in 1:k, j in 1:n])
 
     for i in 1:m
-        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) + z[i] * Gamma[i] + sum(p[i, j] for j in J[i])
-        + sum(B[i,j] * d[j] for j in 1:n2) <= b[i])
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) + sum(A[i, j]*(sum(B[i, l] * q[l, i] for l in 1:k)) for j in 1:n)
+        + z[i] * Gamma[i] + sum(p[i, j] for j in J[i])
+        + sum(B[i,j] * d[j] for j in 1:k) <= b[i])
     end
 
-
-
-#  TODO
     for i in 1:m
-        k = 1
+        r = 1
         for j in J[i]
-            @constraint(model, z[i] + p[i, j] >= y[j] * AU[i, k] + B[i, j] * AU[i, k] * q[i, j])
-            k += 1
+            @constraint(model, z[i] + p[i, j] >= y[j] * AU[i, r] + AU[i, r] * (sum(B[i, l] * q[l, i] for l in 1:k)))
+            r += 1
         end
     end
 
