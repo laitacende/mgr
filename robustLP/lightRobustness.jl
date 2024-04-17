@@ -43,6 +43,7 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     @objective(modelNom, Min, sum(c[i] * x[i] for i in 1:n))
     optimize!(modelNom)
     zOpt = objective_value(modelNom)
+    println("Nominal  ", zOpt)
 
 
     # light robustness model
@@ -168,12 +169,12 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
         cost += c[j] * value(x[j])
     end
     if (printSolution)
-        printLightRobustness(model, n, x, zOpt)
+        printLightRobustness(model, n, x, zOpt, c)
     end
     return model, n, x, zOpt, y, p, z, cost
 end
 
-function printLightRobustness(model, n, x, zOpt)
+function printLightRobustness(model, n, x, zOpt, c)
     if termination_status(model) == OPTIMAL
        println("Solution is optimal")
     elseif termination_status(model) == TIME_LIMIT && has_values(model)

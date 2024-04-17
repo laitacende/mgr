@@ -91,7 +91,23 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     if printSolution
         printMinmax(model, n, x)
     end
-    return model, x, y, p, z,  objective_value(model)
+
+    p1 = []
+    for i in 1:m
+    first
+        for j in J[i]
+
+        end
+    end
+
+    d = Dict(
+    k => value.(v) for
+    (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef}
+    )
+
+    print(d)
+
+    return model, d,  objective_value(model)
 #      println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", objective_value(model), "\\\\")
 end

@@ -122,10 +122,8 @@ function printAdjustable(model, n, x, d, q, AU, J)
         for i in 1:n
             if length(J[i] > 0)
                 tmp = 0
-                k = 0
                 for j in J[i]
-                    tmp += AU[i, k] * q[i, j]
-                    k += 1
+                    tmp +=
                 end
                 println("  d", i, " = ", value(d[i]) + tmp)
             else
