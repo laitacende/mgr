@@ -6,5 +6,6 @@ module robustOpt
     include("./minmax.jl")
     include("./recoverable.jl")
     include("./lightRobustness.jl")
+    include("./nominal.jl")
 
 end
