@@ -10,7 +10,9 @@
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Vector,  AU::Union{Matrix, Vector},
+function lightRobustnessMin(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, Gamma::Union{Vector, SparseVector},
+     AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},
     rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
@@ -83,7 +85,10 @@ function lightRobustnessMin(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
      if (printSolution)
         printLightRobustness(model, n, x, zOpt)
     end
-    return model, n, x, zOpt, y, p, z, cost
+    d = Dict(
+        k => value.(v) for(k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+
+    return model, d, cost
 #          println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
 #      " & ", cost, "\\\\")
 end
@@ -99,7 +104,9 @@ end
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamma::Vector,  AU::Union{Matrix, Vector},
+function lightRobustnessMax(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, Gamma::Union{Vector, SparseVector},
+     AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},
     rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
@@ -171,7 +178,10 @@ function lightRobustnessMax(c::Vector, b::Vector, A::Union{Matrix, Vector}, Gamm
     if (printSolution)
         printLightRobustness(model, n, x, zOpt, c)
     end
-    return model, n, x, zOpt, y, p, z, cost
+    d = Dict(
+        k => value.(v) for(k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+
+    return model, d, cost
 end
 
 function printLightRobustness(model, n, x, zOpt, c)

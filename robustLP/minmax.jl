@@ -12,8 +12,11 @@
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool,
+function minmax(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
+    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+    A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
+    Gamma::Vector, J::Vector{Vector{Int64}},
+    AU::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, bounds::Bool, printModel::Bool,
     printSolution::Bool)
 
     n = size(l)[1]
@@ -101,11 +104,8 @@ function minmax(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     end
 
     d = Dict(
-    k => value.(v) for
-    (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef}
-    )
-
-    print(d)
+        k => value.(v) for
+        (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
 
     return model, d,  objective_value(model)
 #      println(value(x[1]), " & ", value(x[2]), " & ", value(x[3]), " & ", value(x[4]), " & ", value(x[5]),
@@ -126,8 +126,11 @@ end
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector}, bounds::Bool, printModel::Bool,
+function maxmin(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
+    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+    A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
+    Gamma::Vector, J::Vector{Vector{Int64}},
+    AU::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, bounds::Bool, printModel::Bool,
     printSolution::Bool)
      n = size(l)[1]
 
@@ -204,7 +207,11 @@ function maxmin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vec
     if printSolution
         printMinmax(model, n, x)
     end
-    return model, x, y, p, z,  objective_value(model)
+   d = Dict(
+        k => value.(v) for
+        (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+
+    return model, d,  objective_value(model)
 end
 
 

@@ -12,7 +12,9 @@
 
     Continuous budget uncertainty
 """
-function recoverableMin(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Matrix, Vector},
+function recoverableMin(d::Union{Vector, SparseVector}, c::Union{Vector, SparseVector},
+    cU::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+    A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
     n = size(d)[1]
@@ -143,7 +145,9 @@ function recoverableMinInf(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union
     if (printSolution)
         printRecoverable(model, n, x, q, zP, zM, beta)
     end
-    return model, n, x, q, zP, zM, beta, objective_value(model)
+    d = Dict(
+        k => value.(v) for(k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+    return model, d, objective_value(model)
 end
 
 function printRecoverable(model, n, x, q, zP, zM, beta)

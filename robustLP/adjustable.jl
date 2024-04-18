@@ -15,8 +15,11 @@
 
     A and B must be of the same size
 """
-function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matrix, Vector},
-    B::Union{Matrix, Vector}, Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector},
+function adjustableMin(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
+    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+    A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
+    B::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
+    Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},
     bounds::Bool, printModel::Bool, printSolution::Bool)
 
     n = size(l)[1]
@@ -102,6 +105,10 @@ function adjustableMin(c::Vector, l::Vector, u::Vector, b::Vector, A::Union{Matr
     if printSolution
         printAdjustable(model, n, x, d, q, AU, J)
     end
+
+    d = Dict(
+        k => value.(v) for
+        (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
     return model, x, y, p, z, d, q
 
 end

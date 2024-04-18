@@ -1,4 +1,8 @@
-function nominal(c::Vector, b::Vector, A::Union{Matrix, Vector}, printModel::Bool, printSolution::Bool)
+"""
+Ax <= b
+"""
+function nominal(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, printModel::Bool, printSolution::Bool)
     n = size(c)[1]
 
     m = size(A)[1] # number of contraints
@@ -10,9 +14,9 @@ function nominal(c::Vector, b::Vector, A::Union{Matrix, Vector}, printModel::Boo
         throw("Vector b has wrong dimension")
     end
 
-    modelNom = Model(Cbc.Optimizer)
+    model = Model(Cbc.Optimizer)
     set_attribute(model, "logLevel", 0)
-    @variable(modelNom, x[i=1:n] >= 0)
+    @variable(model, x[i=1:n] >= 0)
 
     for i in 1:m
         @constraint(model, sum(A[i, j] * x[j] for j in 1:n)  <= b[i])
@@ -30,7 +34,11 @@ function nominal(c::Vector, b::Vector, A::Union{Matrix, Vector}, printModel::Boo
     optimize!(model)
     zOpt = objective_value(model)
 
-    return model, x, zOpt
+    d = Dict(
+        k => value.(v) for
+        (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+
+    return model, d, zOpt
 end
 
 function printNominal(model, n, x)
