@@ -70,7 +70,10 @@ function recoverableMin(d::Union{Vector, SparseVector}, c::Union{Vector, SparseV
     if (printSolution)
         printRecoverable(model, n, x, q, zP, zM, beta)
     end
-    return model, n, x, q, zP, zM, beta, objective_value(model)
+
+    d = Dict(
+        k => value.(v) for(k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+    return model, d, objective_value(model)
 end
 
 """

@@ -2,7 +2,8 @@ include("../robustLP/robustOpt.jl")
 
 using .robustOpt
 
-using Random, SparseArrays, Distributions, LinearAlgebra
+using Random, SparseArrays, Distributions, LinearAlgebra, Base
+import Base.stderr
 
 # losuję nominalne i kilka serii dla losowych scenariuszy
 # statystyki: koszt (min max) rozwiązania, czas, nominalny koszt, worst case koszt przy czym +- odchylenie z pbb 1/2
@@ -20,6 +21,7 @@ using Random, SparseArrays, Distributions, LinearAlgebra
 # wypadku nie mówimy o naruszeniu ograniczeń; wartość optymalna
 
 # file format: funkcja_celu, naruszone_ograniczenia (w procentach), czas
+redirect_stdout(open("/dev/null", "w"))
 
 function checkConstraints(A, B, b, dict, n, k, mode)
     bad = 0
@@ -105,6 +107,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
 
 
     for i in 1:steps
+        println(stderr, string(i))
         cU = zeros(n * n)
         if (percent)
             cU .+= per * c
@@ -154,7 +157,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
             cU2 = [cU1 0; zeros(2*n + n*n, n*n + 1)]
             for i in 1:length(rhos)
                 model2, dict2, obj2 =  robustOpt.lightRobustnessMin(c1, [0; b; -b; u], [A1; identity], Gamma2,
-                cU2, rho, false, false, false)
+                cU2, rhos[i], false, false, false)
 
                 time = @elapsed robustOpt.lightRobustnessMin(c1, [0; b; -b; u], [A1; identity], Gamma2,
                 cU2, rhos[i], false, false, false)
@@ -168,13 +171,13 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
             # recoverable - continous budget!
             sumUnc = sum(cU)
             Gamma3 = Gamma * sumUnc
-            K = max(cU) * n * Kper
+            K = maximum(cU) * n * KPer
             model3, dict3, obj3 = robustOpt.recoverableMin(zeros(2*n*n), [c; zeros(n*n)],
             [cU; zeros(n * n)], [b; u], [A zeros(n, n*n); Matrix(1I, n*n, n*n) Matrix(1I, n*n, n*n)], Gamma3, K, false, false)
 
             time = @elapsed robustOpt.recoverableMin(zeros(2*n*n), [c; zeros(n*n)],
             [cU; zeros(n * n)], [b; u], [A zeros(n, n*n); Matrix(1I, n*n, n*n) Matrix(1I, n*n, n*n)], Gamma3, K, false, false)
-            constraints = checkConstraints(A, [], b, dict2, n * n, 0, 2)
+            constraints = checkConstraints(A, [], b, dict3, n * n, 0, 2)
             write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
         end
     end
@@ -187,3 +190,5 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, Kper, rhos)
 test("test1", false, 1, [0.3, 0.5], 4, 0.2, 0.5, [0.1, 0.2, 0.5, 0.8])
+
+redirect_stdout(stdout)
