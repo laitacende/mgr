@@ -24,12 +24,12 @@ timeMM = [combine(groupby(dfMM, 1), 4 => minimum)[!, 2], combine(groupby(dfMM, 1
 constraintsMM = [ combine(groupby(dfMM, 1), 3 => minimum)[!, 2], combine(groupby(dfMM, 1), 3 => mean)[!, 2], combine(groupby(dfMM, 1), 3 => maximum)[!, 2]]
 
 # recov
-KPers = [0.1, 0.3, 0.5, 0.8]
+KPerc = [0.1, 0.3, 0.5, 0.8]
 # 4 wartości dla każdego kPer
 objectiveR = []
 timeR = []
 constraintsR = []
-for i in 1:length(KPers)
+for i in 1:length(KPerc)
     append!(objectiveR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => maximum)[!, 2]]])
     append!(timeR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => maximum)[!, 2]]])
     append!(constraintsR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => maximum)[!, 2]]])
@@ -52,54 +52,54 @@ end
 # constraintsA = [combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
 
 function recovAll(fileName)
-#     p = plot(x, objectiveR[1], labels=["min " * string(KPers[1]) "średnia " * string(KPers[1]) "max " * string(KPers[1])],
+#     p = plot(x, objectiveR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])],
 #     title="Wartość funkcji celu", c=:blue)
 #     xlabel!(p, "Γ")
 #     ylabel!(p, "wartość funkcji celu")
-#     for i in 2:length(KPers)
-#         plot!(p, x, objectiveR[i], labels=["min " * string(KPers[i]) "średnia " * string(KPers[i]) "max " * string(KPers[i])])
+#     for i in 2:length(KPerc)
+#         plot!(p, x, objectiveR[i], labels=["min " * string(KPerc[i]) "średnia " * string(KPerc[i]) "max " * string(KPerc[i])])
 #     end
 #     savefig(p, fileName * "_obj.png")
 #
-#     p = plot(x, timeR[1], labels=["min " * string(KPers[1]) "średnia " * string(KPers[1]) "max " * string(KPers[1])], title="Czas")
+#     p = plot(x, timeR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])], title="Czas")
 #     xlabel!(p, "Γ")
 #     ylabel!(p, "czas, s")
-#     for i in 2:length(KPers)
-#         plot!(p, x, timeR[i], labels=["min " * string(KPers[i]) "średnia " * string(KPers[i]) "max " * string(KPers[i])])
+#     for i in 2:length(KPerc)
+#         plot!(p, x, timeR[i], labels=["min " * string(KPerc[i]) "średnia " * string(KPerc[i]) "max " * string(KPerc[i])])
 #     end
 #     savefig(p, fileName * "_time.png")
 #
-#     p = plot(x, constraintsR[1], labels=["min " * string(KPers[1]) "średnia " * string(KPers[1]) "max " * string(KPers[1])], title="Liczba naruszonych ograniczeń")
+#     p = plot(x, constraintsR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])], title="Liczba naruszonych ograniczeń")
 #     xlabel!(p, "Γ")
 #     ylabel!(p, "naruszone ograniczenia, %")
-#     for i in 2:length(KPers)
-#         plot!(p, x, timeR[i], labels=["min " * string(KPers[i]) "średnia " * string(KPers[i]) "max " * string(KPers[i])])
+#     for i in 2:length(KPerc)
+#         plot!(p, x, timeR[i], labels=["min " * string(KPerc[i]) "średnia " * string(KPerc[i]) "max " * string(KPerc[i])])
 #     end
 #     savefig(p, fileName * "_constraints.png")
-    p = plot(x, objectiveR[1][2], label="średnia " * string(KPers[1]),
+    p = plot(x, objectiveR[1][2], label="średnia " * string(KPerc[1]),
     title="Wartość funkcji celu", c=:blue)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
-    for i in 2:length(KPers)
-        plot!(p, x, objectiveR[i][2], label="średnia " * string(KPers[i]))
+    for i in 2:length(KPerc)
+        plot!(p, x, objectiveR[i][2], label="średnia " * string(KPerc[i]))
     end
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, timeR[1][2], label="średnia " * string(KPers[1]), title="Czas")
+    p = plot(x, timeR[1][2], label="średnia " * string(KPerc[1]), title="Czas")
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
-    for i in 2:length(KPers)
-        plot!(p, x, timeR[i][2], label="średnia " * string(KPers[i]))
+    for i in 2:length(KPerc)
+        plot!(p, x, timeR[i][2], label="średnia " * string(KPerc[i]))
     end
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
-    p = plot(x, constraintsR[1][2], label="średnia " * string(KPers[1]), title="Liczba naruszonych ograniczeń")
+    p = plot(x, constraintsR[1][2], label="średnia " * string(KPerc[1]), title="Liczba naruszonych ograniczeń")
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
-    for i in 2:length(KPers)
-        plot!(p, x, constraintsR[i][2], label="średnia " * string(KPers[i]))
+    for i in 2:length(KPerc)
+        plot!(p, x, constraintsR[i][2], label="średnia " * string(KPerc[i]))
     end
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")

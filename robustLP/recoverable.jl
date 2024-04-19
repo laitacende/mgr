@@ -18,7 +18,6 @@ function recoverableMin(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Unio
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
     n = size(d)[1]
-    println(n, " ", size(c))
     if (size(c)[1] != n)
         throw("Vector c has wrong dimension")
     end
@@ -72,7 +71,7 @@ function recoverableMin(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Unio
     end
 
     d = Dict(
-        k => value.(v) for(k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+        k => value.(v) for(k, v) in object_dictionary(model))
     return model, d, objective_value(model)
 end
 
@@ -90,7 +89,9 @@ end
 
     Continuous budget uncertainty
 """
-function recoverableMinInf(d::Vector, c::Vector, cU::Vector, b::Vector, A::Union{Matrix, Vector},
+function recoverableMinInf(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Union{Vector, SparseVector, SparseMatrixCSC},
+    cU::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
+    A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
     n = size(d)[1]
