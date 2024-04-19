@@ -12,8 +12,8 @@
 
     Continuous budget uncertainty
 """
-function recoverableMin(d::Union{Vector, SparseVector}, c::Union{Vector, SparseVector},
-    cU::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function recoverableMin(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Union{Vector, SparseVector, SparseMatrixCSC},
+    cU::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 

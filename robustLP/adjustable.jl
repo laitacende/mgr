@@ -15,8 +15,8 @@
 
     A and B must be of the same size
 """
-function adjustableMin(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
-    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function adjustableMin(c::Union{Vector, SparseVector, SparseMatrixCSC}, l::Union{Vector, SparseVector, SparseMatrixCSC},
+    u::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     B::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Vector, J::Vector{Vector{Int64}}, AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},

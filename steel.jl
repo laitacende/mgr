@@ -30,7 +30,11 @@ Gamma = [1, 0, 0]
 AU = [80 50; 0 0; 0 0]
 rho = 0.2
 while rho <= 0.8
-    robustOpt.lightRobustnessMax(c, b, A,  Gamma, AU, rho,false, false, true)
+    model, dict, cost = robustOpt.lightRobustnessMax(c, b, A,  Gamma, AU, rho,false, false, false)
+    for i in 1:2
+            print(round.(dict[:x][i]; sigdigits=2), " & ")
+    end
+    print(round.(sum(c[j] * dict[:x][j] for j in 1:2); sigdigits=2), "\n")
     global rho += 0.2
 end
 

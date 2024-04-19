@@ -10,7 +10,7 @@
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function lightRobustnessMin(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function lightRobustnessMin(c::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
      A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, Gamma::Union{Vector, SparseVector},
      AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},
     rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
@@ -78,7 +78,7 @@ function lightRobustnessMin(c::Union{Vector, SparseVector}, b::Union{Vector, Spa
         println(model)
     end
     optimize!(model)
-    cost = 0
+    cost = 0.0
     for j in 1:n
         cost += c[j] * value(x[j])
     end
@@ -104,7 +104,7 @@ end
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function lightRobustnessMax(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function lightRobustnessMax(c::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
      A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, Gamma::Union{Vector, SparseVector},
      AU::Union{Matrix, Vector, SparseMatrixCSC, SparseVector},
     rho::Float64, val::Bool, printModel::Bool, printSolution::Bool)
@@ -171,7 +171,7 @@ function lightRobustnessMax(c::Union{Vector, SparseVector}, b::Union{Vector, Spa
         println(model)
     end
     optimize!(model)
-    cost = 0
+    cost = 0.0
     for j in 1:n
         cost += c[j] * value(x[j])
     end

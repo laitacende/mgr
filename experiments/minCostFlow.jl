@@ -50,8 +50,8 @@ end
 # Gamma to procent liczby zmiennych wszystkich lub sumy niepewnosci
 # percent czy niepewności to procenty nominalnych
 # steps  liczba różnych losowań niepewności
-function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
-
+function test(fileName, percent, steps, Gammas, n, per, KPers, rhos)
+    Random.seed!(4321)
     fMinMax = open("./" * fileName * "_minmax.txt", "a")
     fLight = open("./" * fileName * "_light.txt", "a")
     fRecov = open("./" * fileName * "_recov.txt", "a")
@@ -80,9 +80,9 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
     end
 
     # u = Vector{Float64}(undef, n * n)
-    u = zeros(n * n)
+    u = spzeros(n * n)
     u .+= rand.((Uniform(0, 150)))
-    b = zeros(n)
+    b = spzeros(n)
 
     # must sum to 0
     # generate supply
@@ -95,20 +95,34 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
     end
 
     # generate vectors
-    c = zeros(n * n)
+    c = spzeros(n * n)
     c .+= rand.((Uniform(0, 100)))
 
     # nominal
-    identity = Matrix(1I, n*n, n*n)
-    model0, dict0, obj0 = robustOpt.nominal(c, [b; -b; u], [A; -A; identity], false, false)
+    identity0 = spdiagm(0 => ones(n * n))
 
-    time = @elapsed robustOpt.nominal(c, [b; -b; u], [A; -A; identity], false, false)
+
+    model0, dict0, obj0 = robustOpt.nominal(c, [b; -b; u], [A; -A; identity0], false, false)
+    time = @elapsed robustOpt.nominal(c, [b; -b; u], [A; -A; identity0], false, false)
     write(fNom, string(obj0) * " " * string(time) * "\n")
 
 
+    c1 = spzeros(n*n + 1)
+    c1[n * n + 1] = 1
+    cC = copy(c)
+    A1 = [sparse([cC' -1]); A spzeros(n, 1); -A spzeros(n, 1)]
+    # all of the costs can be uncertain
+    J1 = [Int64[] for i in 1:(2*n + 1)]
+    J1[1] = [i for i in 1:(n*n)]
+    Gamma1 = [0.0 for i in 1:(2*n + 1)]
+
+#     identity = [Matrix(1I, n*n, n*n) zeros(n*n, 1)]
+    identity = [spdiagm(0 => ones(n * n)) spzeros(n*n, 1)]
+    Gamma2 = [0.0 for i in 1:(2*n + 1 + n*n)]
+
     for i in 1:steps
         println(stderr, string(i))
-        cU = zeros(n * n)
+        cU = spzeros(n * n)
         if (percent)
             cU .+= per * c
         else
@@ -118,67 +132,67 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
         # nominal with worst case
         # modify vector c to obtain its worst case +- with obb 1/2
         cWorst = copy(c)
-        for i in 1:length(c)
+        for j in 1:length(c)
             if rand() < 0.5
-                cWorst[i] += cU[i]
+                cWorst[j] += cU[j]
             else
-                cWorst[i] -= cU[i]
+                cWorst[j] -= cU[j]
             end
         end
-        model01, dict01, obj01 = robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity], false, false)
-        time = @elapsed robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity], false, false)
-        write(fNomWorst, string(obj01) * " " * string(time) * "\n")
 
+        model01, dict01, obj01 = robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity0], false, false)
+        time = @elapsed robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity0], false, false)
+        write(fNomWorst, string(obj01) * " " * string(time) * "\n")
          for Gamma in Gammas
             # minmax
-            c1 = zeros(n*n + 1)
-            c1[n * n + 1] = 1
-            cC = copy(c)
-            A1 = [sparse([cC' -1]); A zeros(n, 1); -A zeros(n, 1)]
-            # all of the costs can be uncertain
-            J1 = [Int64[] for i in 1:(2*n + 1)]
-            J1[1] = [i for i in 1:(n*n)]
-            Gamma1 = [0.0 for i in 1:(2*n + 1)]
             Gamma1[1] = Gamma * n * n
             cU1 = reshape(cU, 1, length(cU))
-            model1, dict1, obj1 = robustOpt.minmax(c1, zeros(n*n + 1), [u; 100000000000000000],
-            [0; b; -b], A1, Gamma1, J1, cU1, true, false, false)
-
-
-            time = @elapsed robustOpt.minmax(c1, zeros(n*n + 1), [u; 100000000000000000],
-            [0; b; -b], A1, Gamma1, J1, cU1, true, false, false)
+            cU1 = spzeros((1, length(cU)))
+            for r in 1:length(cU)
+                cU1[r] = cU[r]
+            end
+            model1, dict1, obj1 = robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
+            sparse([0; b; -b]), A1, Gamma1, J1, cU1, true, false, false)
+            time = @elapsed robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
+            sparse([0; b; -b]), A1, Gamma1, J1, cU1, true, false, false)
             constraints = checkConstraints(A, [], b, dict1, n * n, 0, 0)
             write(fMinMax, string(Gamma) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
-
             # light robustness
-            identity = [Matrix(1I, n*n, n*n) zeros(n*n, 1)]
-            Gamma2 = [0.0 for i in 1:(2*n + 1 + n*n)]
             Gamma2[1] = Gamma * n * n
-            cU2 = [cU1 0; zeros(2*n + n*n, n*n + 1)]
-            for i in 1:length(rhos)
-                model2, dict2, obj2 =  robustOpt.lightRobustnessMin(c1, [0; b; -b; u], [A1; identity], Gamma2,
-                cU2, rhos[i], false, false, false)
-
-                time = @elapsed robustOpt.lightRobustnessMin(c1, [0; b; -b; u], [A1; identity], Gamma2,
-                cU2, rhos[i], false, false, false)
+            cU2 = [cU1 0; spzeros(2*n + n*n, n*n + 1)]
+            for j in 1:length(rhos)
+                model2, dict2, obj2 =  robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A1; identity]), Gamma2,
+                cU2, rhos[j], false, false, false)
+                time = @elapsed robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A1; identity]), Gamma2,
+                cU2, rhos[j], false, false, false)
                 constraints = checkConstraints(A, [], b, dict2, n * n, 0, 1)
-                if i == length(rhos)
+                if j == length(rhos)
                     write(fLight, string(Gamma) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
                 else
                    write(fLight, string(Gamma) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
                 end
             end
+
             # recoverable - continous budget!
             sumUnc = sum(cU)
             Gamma3 = Gamma * sumUnc
-            K = maximum(cU) * n * KPer
-            model3, dict3, obj3 = robustOpt.recoverableMin(zeros(2*n*n), [c; zeros(n*n)],
-            [cU; zeros(n * n)], [b; u], [A zeros(n, n*n); Matrix(1I, n*n, n*n) Matrix(1I, n*n, n*n)], Gamma3, K, false, false)
-
-            time = @elapsed robustOpt.recoverableMin(zeros(2*n*n), [c; zeros(n*n)],
-            [cU; zeros(n * n)], [b; u], [A zeros(n, n*n); Matrix(1I, n*n, n*n) Matrix(1I, n*n, n*n)], Gamma3, K, false, false)
-            constraints = checkConstraints(A, [], b, dict3, n * n, 0, 2)
-            write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
+            for j in 1:length(KPers)
+                K = maximum(cU) * n * KPers[j]
+                if j == 1
+                    K = 10.0 * j
+                end
+                model3, dict3, obj3 = robustOpt.recoverableMin(spzeros(2*n*n), sparse([c; spzeros(n*n)]),
+                sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
+                time = @elapsed robustOpt.recoverableMin(spzeros(2*n*n), sparse([c; spzeros(n*n)]),
+                sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
+                constraints = checkConstraints(A, [], b, dict3, n * n, 0, 2)
+                if j == length(KPers)
+                    write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
+                else
+                   write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * " ")
+                end
+            end
+            GC.gc()
         end
     end
     close(fMinMax)
@@ -188,7 +202,8 @@ function test(fileName, percent, steps, Gammas, n, per, KPer, rhos)
     close(fNom)
 end
 
-# test(fileName, percent, steps, Gamma, n, per, Kper, rhos)
-test("test1", false, 1, [0.3, 0.5], 4, 0.2, 0.5, [0.1, 0.2, 0.5, 0.8])
+# test(fileName, percent, steps, Gamma, n, per, Kpers, rhos)
+# 30 jest ok
+test("test1", true, 5, [0.0, 0.1, .3, 0.5, 0.7, 0.9], 20, 0.7, [0.1, 0.3, 0.5, 0.8], [0.1, 0.2, 0.5, 0.8])
 
 redirect_stdout(stdout)

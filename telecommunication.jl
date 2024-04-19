@@ -12,25 +12,31 @@ A = [1 -1 1 -1 0 0 0 0 0 0 1 -1 0 0;
     0 0 0 0 0 0 -1 1 0 0 -1 1 0 0;
     -1 1 0 0 0 0 0 0 -1 1 0 0 -1 1]
 g = [50.0, 100.0, 200.0]
+ks = [0.0, 1.0, 3.0, 100.0]
 for t in g
     Gamma = t
-    K = 3.0
-    robustOpt.recoverableMin(d, c, cu, b, A, Gamma, K, false, true)
+    for K in ks
+#     K = 3.0
+println("--------------", t, " ", K)
+       model, dict,cost =  robustOpt.recoverableMin(d, c, cu, b, A, Gamma, K, false, false)
+       display(dict)
+       println(cost)
+    end
 end
 
-using JuMP
-using Cbc
-println("Nominal")
-model = Model(Cbc.Optimizer)
-@variable(model, 0 <= x[1:14])
-for i in 1:5
-    @constraint(model, sum(A[i, j] * x[j] for j in 1:14) == b[i])
-end
-
-@objective(model, Min, sum(x[i]*cu[i] for i in 1:14))
-println(model)
-optimize!(model)
-println("  objective value = ", objective_value(model))
-for i in 1:14
- println(i, " ", value(x[i]))
-end
+# using JuMP
+# using Cbc
+# println("Nominal")
+# model = Model(Cbc.Optimizer)
+# @variable(model, 0 <= x[1:14])
+# for i in 1:5
+#     @constraint(model, sum(A[i, j] * x[j] for j in 1:14) == b[i])
+# end
+#
+# @objective(model, Min, sum(x[i]*cu[i] for i in 1:14))
+# println(model)
+# optimize!(model)
+# println("  objective value = ", objective_value(model))
+# for i in 1:14
+#  println(i, " ", value(x[i]))
+# end

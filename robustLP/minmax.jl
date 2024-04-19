@@ -12,15 +12,14 @@
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function minmax(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
-    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function minmax(c::Union{Vector, SparseVector, SparseMatrixCSC}, l::Union{Vector, SparseVector, SparseMatrixCSC},
+    u::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Vector, J::Vector{Vector{Int64}},
     AU::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, bounds::Bool, printModel::Bool,
     printSolution::Bool)
 
     n = size(l)[1]
-
     if (size(u)[1] != n)
         throw("Vector u has wrong dimension")
     end
@@ -126,8 +125,8 @@ end
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
-function maxmin(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
-    u::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
+function maxmin(c::Union{Vector, SparseVector, SparseMatrixCSC}, l::Union{Vector, SparseVector, SparseMatrixCSC},
+    u::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Vector, J::Vector{Vector{Int64}},
     AU::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, bounds::Bool, printModel::Bool,
@@ -146,6 +145,7 @@ function maxmin(c::Union{Vector, SparseVector}, l::Union{Vector, SparseVector},
     if (length(size(A)) > 1 && size(A)[2] != n)
         throw("Matrix A has wrong dimensions")
     end
+
     if ((length(size(AU)) > 1 && size(AU)[2] > n) || size(AU)[1] > m)
         throw("Matrix AU has wrong dimensions")
     end
