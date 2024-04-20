@@ -51,7 +51,7 @@ end
 # percent czy niepewności to procenty nominalnych
 # steps  liczba różnych losowań niepewności
 function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
-    Random.seed!(4321)
+    Random.seed!(456789)
     fMinMax = open("./" * fileName * "_minmax.txt", "a")
     fLight = open("./" * fileName * "_light.txt", "a")
     fRecov = open("./" * fileName * "_recov.txt", "a")
@@ -81,13 +81,13 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 
     # u = Vector{Float64}(undef, n * n)
     u = spzeros(n * n)
-    u .+= rand.((Uniform(0, 25))) # 25
+    u .+= rand.((Uniform(0, 25))) # 25 wczesniej 150
     b = spzeros(n)
 
     # must sum to 0
     # generate supply
     for j in 1:100
-        supply = rand(Uniform(0, 20)) # 10
+        supply = rand(Uniform(0, 10)) # 10
         # add suply to random node
         b[rand(1:n)] += supply
         # add demand to random node
@@ -101,11 +101,9 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
     # nominal
     identity0 = spdiagm(0 => ones(n * n))
 
-#=
     model0, dict0, obj0 = robustOpt.nominal(c, [b; -b; u], [A; -A; identity0], false, false)
     time = @elapsed robustOpt.nominal(c, [b; -b; u], [A; -A; identity0], false, false)
     write(fNom, string(obj0) * " " * string(time) * "\n")
-=#
 
     c1 = spzeros(n*n + 1)
     c1[n * n + 1] = 1
@@ -139,11 +137,11 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
                 cWorst[j] -= cU[j]
             end
         end
-#=
+
         model01, dict01, obj01 = robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity0], false, false)
         time = @elapsed robustOpt.nominal(cWorst, [b; -b; u], [A; -A; identity0], false, false)
         write(fNomWorst, string(obj01) * " " * string(time) * "\n")
-=#
+
          for Gamma in Gammas
             # minmax
             Gamma1[1] = Gamma * n * n
@@ -152,7 +150,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
             for r in 1:length(cU)
                 cU1[r] = cU[r]
             end
-#=
+
             model1, dict1, obj1 = robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
             sparse([0; b; -b]), A1, Gamma1, J1, cU1, true, false, false)
             time = @elapsed robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
@@ -175,15 +173,17 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
                    write(fLight, string(Gamma) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
                 end
             end
-=#
+
             # recoverable - continous budget!
             sumUnc = sum(cU)
             Gamma3 = Gamma * sumUnc
             for j in 1:length(KPerc)
-                K = KPerc[j] * n * n * sum(abs.(b)) / 2
-                K = 10000000000000.0
-                println(stderr,KPerc[j] * n * n * sum(abs.(b)) / 2)
-#                 model3, dict3, obj3 = robustOpt.recoverableMin(d, sparse([c; spzeros(n*n)]),
+                K = KPerc[j] * sum(abs.(b)) * (1.0 + Gamma)
+#                  println(stderr, Gamma, KPerc[j])
+#                 K = 100000000000000000.0
+#                 println(stderr,KPerc[j] * n * n * sum(abs.(b)) / 2)
+#                  to działa gorzej
+#                 model3, dict3, obj3 = robustOpt.recoverableMin(zeros(2*n*n), sparse([c; spzeros(n*n)]),
 #                 sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
                 model3, dict3, obj3 = robustOpt.recoverableMin(sparse([c; spzeros(n*n)]), spzeros(2 * n * n),
                 sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
@@ -191,8 +191,8 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
                 time = @elapsed robustOpt.recoverableMin(sparse([c; spzeros(n*n)]), spzeros(2 * n * n),
                 sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
                 constraints = checkConstraints(A, [], b, dict3, n * n, 0, 2)
-                display(dict3)
-                println(stderr, Gamma, KPerc[j])
+#                 display(dict3)
+#                 println(stderr, "zs ", sum(dict3[:zP][j] + dict3[:zM][j] for j in 1:(n*n)))
                 if j == length(KPerc)
                     write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
                 else
@@ -211,7 +211,7 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test1", true, 2, [0.0, 0.1, .3, 0.5, 0.7, 0.9], 8, 0.5, [0.1, 0.3, 0.5, 0.8], [0.1, 0.2, 0.5, 0.8])
+test("test1", true, 5, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.5, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
 
 redirect_stdout(stdout)
 

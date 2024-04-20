@@ -46,7 +46,7 @@ function recoverableMin(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Unio
     @variable(model, zM[1:n] >= 0)
     @variable(model, q[1:n] >= 0)
     @variable(model, beta >= 0)
-    println(stderr, "KK ", K)
+
     for i in 1:m
         @constraint(model, sum(A[i, j] * x[j] for j in 1:n) == b[i])
         @constraint(model, sum(A[i, j] * (zP[j] - zM[j]) for j in 1:n) == 0)

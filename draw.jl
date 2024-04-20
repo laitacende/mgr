@@ -1,5 +1,6 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
+# pallette=:Zissou1Continuous
 
 fileName = "test1"
 
@@ -24,7 +25,7 @@ timeMM = [combine(groupby(dfMM, 1), 4 => minimum)[!, 2], combine(groupby(dfMM, 1
 constraintsMM = [ combine(groupby(dfMM, 1), 3 => minimum)[!, 2], combine(groupby(dfMM, 1), 3 => mean)[!, 2], combine(groupby(dfMM, 1), 3 => maximum)[!, 2]]
 
 # recov
-KPerc = [0.1, 0.3, 0.5, 0.8]
+KPerc =  [0.1, 0.3, 0.5, 0.8, 1.0]
 # 4 wartości dla każdego kPer
 objectiveR = []
 timeR = []
@@ -36,7 +37,7 @@ for i in 1:length(KPerc)
 end
 
 # light robustness
-rhos = [0.1, 0.2, 0.5, 0.8]
+rhos = [0.1, 0.2, 0.5, 0.8, 1.0]
 objectiveL = []
 timeL = []
 constraintsL = []
@@ -76,8 +77,8 @@ function recovAll(fileName)
 #         plot!(p, x, timeR[i], labels=["min " * string(KPerc[i]) "średnia " * string(KPerc[i]) "max " * string(KPerc[i])])
 #     end
 #     savefig(p, fileName * "_constraints.png")
-    p = plot(x, objectiveR[1][2], label="średnia " * string(KPerc[1])
-    title="Wartość funkcji celu", pallette=:Zissou1Continuous)
+    p = plot(x, objectiveR[1][2], label="średnia " * string(KPerc[1]),
+    title="Wartość funkcji celu")
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     for i in 2:length(KPerc)
@@ -86,7 +87,7 @@ function recovAll(fileName)
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, timeR[1][2], label="średnia " * string(KPerc[1]), title="Czas", pallette=:Zissou1Continuous)
+    p = plot(x, timeR[1][2], label="średnia " * string(KPerc[1]), title="Czas" )
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     for i in 2:length(KPerc)
@@ -95,8 +96,8 @@ function recovAll(fileName)
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
-    p = plot(x, constraintsR[1][2], label="średnia " * string(KPerc[1])
-    title="Liczba naruszonych ograniczeń", pallette=:Zissou1Continuous)
+    p = plot(x, constraintsR[1][2], label="średnia " * string(KPerc[1]),
+    title="Liczba naruszonych ograniczeń" )
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(KPerc)
@@ -136,16 +137,16 @@ function lightAll(fileName)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     for i in 2:length(rhos)
-        plot!(p, x, objectiveL[i][2], label="średnia " * string(rhos[i]))
+        plot!(p, x, objectiveL[i][2], label="średnia " * string(rhos[i]) )
     end
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, timeL[1][2], label="średnia " * string(rhos[1]), title="Czas", pallette=:Zissou1Continuous)
+    p = plot(x, timeL[1][2], label="średnia " * string(rhos[1]), title="Czas" )
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     for i in 2:length(rhos)
-        plot!(p, x, timeL[i][2], label="średnia " * string(rhos[i]))
+        plot!(p, x, timeL[i][2], label="średnia " * string(rhos[i]) )
     end
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
@@ -155,7 +156,7 @@ function lightAll(fileName)
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(rhos)
-        plot!(p, x, timeL[i][2], label="średnia " * string(rhos[i]))
+        plot!(p, x, timeL[i][2], label="średnia " * string(rhos[i]) )
     end
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
@@ -164,11 +165,11 @@ end
 
 function all(kperIdx, rhoIdx, fileName)
     # nominalny
-    p = plot(x, [dfNom[!, 1] for i in 1:length(x)], label="Nom", title="Wartość funkcji celu", c=:turquoise)
+    p = hline!([dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     # worst
-    plot!(p, x, objectiveW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
+    hline!(p, x, objectiveW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
     # minmax
     plot!(p, x, objectiveMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
     # light
@@ -177,16 +178,16 @@ function all(kperIdx, rhoIdx, fileName)
     c=[:olivedrab1 :limegreen :darkgreen])
     # recov
     plot!(p, x, objectiveR[kperIdx],
-    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+    labels=["min L" * string(KPerc[kperIdx]) "średnia L" * string(KPerc[kperIdx]) "max L" * string(KPerc[kperIdx])],
     c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, [dfNom[!, 2] for i in 1:length(x)], label="Nom", title="Czas", c=:turquoise)
+    p = hline(x, [dfNom[!, 2][1]], label="Nom", title="Czas", c=:turquoise)
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     # worst
-    plot!(p, x, timeW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
+    hline!(p, x, timeW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
     # minmax
     plot!(p, x, timeMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
     # light
@@ -195,7 +196,7 @@ function all(kperIdx, rhoIdx, fileName)
     c=[:olivedrab1 :limegreen :darkgreen])
     # recov
     plot!(p, x, timeR[kperIdx],
-    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+    labels=["min L" * string(KPerc[kperIdx]) "średnia L" * string(KPerc[kperIdx]) "max L" * string(KPerc[kperIdx])],
      c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
@@ -210,7 +211,7 @@ function all(kperIdx, rhoIdx, fileName)
     c=[:olivedrab1 :limegreen :darkgreen])
     # recov
     plot!(p, x, constraintsR[kperIdx],
-    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+    labels=["min L" * string(KPerc[kperIdx]) "średnia L" * string(KPerc[kperIdx]) "max L" * string(KPerc[kperIdx])],
      c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
@@ -219,4 +220,4 @@ end
 
 # recovAll("t1_recov")
 # lightAll("t1_light")
-all(1, 1, "t1")
+all(3, 3, "t1")
