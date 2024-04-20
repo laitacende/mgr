@@ -81,7 +81,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 
     # u = Vector{Float64}(undef, n * n)
     u = spzeros(n * n)
-    u .+= rand.((Uniform(0, 15))) # 25
+    u .+= rand.((Uniform(0, 25))) # 25
     b = spzeros(n)
 
     # must sum to 0
@@ -180,7 +180,8 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
             sumUnc = sum(cU)
             Gamma3 = Gamma * sumUnc
             for j in 1:length(KPerc)
-                K = 10000.0
+                K = KPerc[j] * n * n * sum(abs.(b)) / 2
+                K = 10000000000000.0
                 println(stderr,KPerc[j] * n * n * sum(abs.(b)) / 2)
 #                 model3, dict3, obj3 = robustOpt.recoverableMin(d, sparse([c; spzeros(n*n)]),
 #                 sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
@@ -191,7 +192,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
                 sparse([cU; spzeros(n * n)]), sparse([b; u]), sparse([A spzeros(n, n*n); identity0 identity0]), Gamma3, K, false, false)
                 constraints = checkConstraints(A, [], b, dict3, n * n, 0, 2)
                 display(dict3)
-                println(stderr)
+                println(stderr, Gamma, KPerc[j])
                 if j == length(KPerc)
                     write(fRecov, string(Gamma) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
                 else
@@ -210,7 +211,7 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test1", true, 5, [0.0, 0.1, .3, 0.5, 0.7, 0.9], 8, 0.5, [0.1, 0.3, 0.5, 0.8], [0.1, 0.2, 0.5, 0.8])
+test("test1", true, 2, [0.0, 0.1, .3, 0.5, 0.7, 0.9], 8, 0.5, [0.1, 0.3, 0.5, 0.8], [0.1, 0.2, 0.5, 0.8])
 
 redirect_stdout(stdout)
 

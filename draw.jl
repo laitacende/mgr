@@ -76,8 +76,8 @@ function recovAll(fileName)
 #         plot!(p, x, timeR[i], labels=["min " * string(KPerc[i]) "średnia " * string(KPerc[i]) "max " * string(KPerc[i])])
 #     end
 #     savefig(p, fileName * "_constraints.png")
-    p = plot(x, objectiveR[1][2], label="średnia " * string(KPerc[1]),
-    title="Wartość funkcji celu", c=:blue)
+    p = plot(x, objectiveR[1][2], label="średnia " * string(KPerc[1])
+    title="Wartość funkcji celu", pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     for i in 2:length(KPerc)
@@ -86,7 +86,7 @@ function recovAll(fileName)
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, timeR[1][2], label="średnia " * string(KPerc[1]), title="Czas")
+    p = plot(x, timeR[1][2], label="średnia " * string(KPerc[1]), title="Czas", pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     for i in 2:length(KPerc)
@@ -95,7 +95,8 @@ function recovAll(fileName)
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
-    p = plot(x, constraintsR[1][2], label="średnia " * string(KPerc[1]), title="Liczba naruszonych ograniczeń")
+    p = plot(x, constraintsR[1][2], label="średnia " * string(KPerc[1])
+    title="Liczba naruszonych ograniczeń", pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(KPerc)
@@ -130,7 +131,8 @@ function lightAll(fileName)
 #     end
 #     savefig(p, fileName * "_constraints.png")
 
-    p = plot(x, objectiveL[1][2], label="średnia " * string(rhos[1]), title="Wartość funkcji celu")
+    p = plot(x, objectiveL[1][2], label="średnia " * string(rhos[1]), title="Wartość funkcji celu",
+    pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     for i in 2:length(rhos)
@@ -139,7 +141,7 @@ function lightAll(fileName)
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot(x, timeL[1][2], label="średnia " * string(rhos[1]), title="Czas")
+    p = plot(x, timeL[1][2], label="średnia " * string(rhos[1]), title="Czas", pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     for i in 2:length(rhos)
@@ -148,7 +150,8 @@ function lightAll(fileName)
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
-    p = plot(x, constraintsL[1][2], label="średnia " * string(rhos[1]), title="Liczba naruszonych ograniczeń")
+    p = plot(x, constraintsL[1][2], label="średnia " * string(rhos[1]), title="Liczba naruszonych ograniczeń",
+    pallette=:Zissou1Continuous)
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(rhos)
@@ -161,49 +164,59 @@ end
 
 function all(kperIdx, rhoIdx, fileName)
     # nominalny
-    p = plot(x, [dfNom[!, 1] for i in 1:length(x)], label="Nom", title="Wartość funkcji celu")
+    p = plot(x, [dfNom[!, 1] for i in 1:length(x)], label="Nom", title="Wartość funkcji celu", c=:turquoise)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     # worst
-    plot!(p, x, objectiveW, labels=["min W" "średnia W" "max W"])
+    plot!(p, x, objectiveW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
     # minmax
-    plot!(p, x, objectiveMM, labels=["min MM" "średnia MM" "max MM"])
+    plot!(p, x, objectiveMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
     # light
-    plot!(p, x, objectiveL[rhoIdx], labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])])
+    plot!(p, x, objectiveL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
     # recov
-    plot!(p, x, objectiveR[kperIdx], labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])])
+    plot!(p, x, objectiveR[kperIdx],
+    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+    c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-
-    p = plot(x, [dfNom[!, 2] for i in 1:length(x)], label="Nom", title="Czas")
+    p = plot(x, [dfNom[!, 2] for i in 1:length(x)], label="Nom", title="Czas", c=:turquoise)
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     # worst
-    plot!(p, x, timeW, labels=["min W" "średnia W" "max W"])
+    plot!(p, x, timeW, labels=["min W" "średnia W" "max W"], c=[:palevioletred1 :deeppink2 :violetred4])
     # minmax
-    plot!(p, x, timeMM, labels=["min MM" "średnia MM" "max MM"])
+    plot!(p, x, timeMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
     # light
-    plot!(p, x, timeL[rhoIdx], labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])])
+    plot!(p, x, timeL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
     # recov
-    plot!(p, x, timeR[kperIdx], labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])])
+    plot!(p, x, timeR[kperIdx],
+    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+     c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
-    p = plot(x, constraintsMM, labels=["min MM" "średnia MM" "max MM"], title="Liczba naruszonych ograniczeń")
+    p = plot(x, constraintsMM, labels=["min MM" "średnia MM" "max MM"], title="Liczba naruszonych ograniczeń",
+    c=[:skyblue2 :dodgerblue2 :midnightblue])
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     # light
-    plot!(p, x, constraintsL[rhoIdx], labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])])
+    plot!(p, x, constraintsL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
     # recov
-    plot!(p, x, constraintsR[kperIdx], labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])])
+    plot!(p, x, constraintsR[kperIdx],
+    labels=["min L" * string(rhos[kperIdx]) "średnia L" * string(rhos[kperIdx]) "max L" * string(rhos[kperIdx])],
+     c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
-
     # TODO adjustable
 end
 
-recovAll("t1_recov")
-lightAll("t1_light")
-
-
+# recovAll("t1_recov")
+# lightAll("t1_light")
+all(1, 1, "t1")
