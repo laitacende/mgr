@@ -159,7 +159,7 @@ end
 
 function all(kperIdx, rhoIdx, fileName)
     # nominalny
-    p = plot!([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:bottomright)
+    p = plot([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:bottomright)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     # worst
@@ -216,7 +216,7 @@ function all(kperIdx, rhoIdx, fileName)
     # TODO adjustable
 end
 
-# recovAll("t1_recov")
-# lightAll("t1_light")
+recovAll("t1_recov")
+lightAll("t1_light")
 # all(kperIdx, rhoIdx, fileName)
 all(3, 2, "t1")

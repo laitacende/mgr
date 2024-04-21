@@ -10,7 +10,7 @@ b = [40*200*140]
 Gamma = [0]
 J = [[1, 2]]
 AU = [80 50]
-m = robustOpt.maxmin(c, l, u, b, A, Gamma, J, AU, true, true, true)
+# m = robustOpt.maxmin(c, l, u, b, A, Gamma, J, AU, true, true, true)
 # using JuMP
 # using Cbc
 # println("Nominal")
@@ -24,17 +24,21 @@ m = robustOpt.maxmin(c, l, u, b, A, Gamma, J, AU, true, true, true)
 #  println("x1 = ", value(x1))
 #  println("x2 = ", value(x2))
 # c = [30, 25]
-A = [200 140; 1 0; 0 1]
+A = [120 90; 1 0; 0 1]
 b = [40*200*140, 4000, 6000]
-Gamma = [1, 0, 0]
-AU = [80 50; 0 0; 0 0]
+Gamma = [2, 0, 0]
+AU = [80*2 50*2; 0 0; 0 0]
 rho = 0.2
 while rho <= 0.8
     model, dict, cost = robustOpt.lightRobustnessMax(c, b, A,  Gamma, AU, rho,false, false, false)
+    println("-------------" , rho)
+    println(" ")
+    display(dict)
     for i in 1:2
-            print(round.(dict[:x][i]; sigdigits=2), " & ")
+            print(dict[:x][i], " & ")
     end
-    print(round.(sum(c[j] * dict[:x][j] for j in 1:2); sigdigits=2), "\n")
+    print(cost, "\n")
+#     print(round.(sum(c[j] * dict[:x][j] for j in 1:2); sigdigits=2), "\n")
     global rho += 0.2
 end
 

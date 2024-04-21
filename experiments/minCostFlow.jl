@@ -176,11 +176,11 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
             # light robustness
             Gamma2[1] = Gamma * n * n
 #             cU2 = [cU1 0; spzeros(2*n + n*n, n*n + 1)]
-            cU2 = [cU12 0; spzeros(2*n + n*n, n*n + 1)]
+            cU2 = [cU1 0; spzeros(2*n + n*n, n*n + 1)]
             for j in 1:length(rhos)
-                model2, dict2, obj2 =  robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A12; identity]), Gamma2,
+                model2, dict2, obj2 =  robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A1; identity]), Gamma2,
                 cU2, rhos[j], false, false, false)
-                time = @elapsed robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A12; identity]), Gamma2,
+                time = @elapsed robustOpt.lightRobustnessMin(c1, sparse([0; b; -b; u]), sparse([A1; identity]), Gamma2,
                 cU2, rhos[j], false, false, false)
                 constraints = checkConstraints(A, [], b, dict2, n * n, 0, 1)
                 if j == length(rhos)
