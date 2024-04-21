@@ -1,6 +1,5 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
-# pallette=:Zissou1Continuous
 
 fileName = "test1"
 
