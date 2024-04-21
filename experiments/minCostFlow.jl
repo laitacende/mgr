@@ -121,10 +121,13 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
     for i in 1:steps
         println(stderr, string(i))
         cU = spzeros(n * n)
-        if (percent)
+        if (percent) # bez sensu dla stałego c
             cU .+= per * c
         else
-            cU .+= rand.((Uniform(0, 80)))
+            for r in 1:length(c)
+                cU[r] = rand(Uniform(0, c[i] * per))
+#                 cU .+= rand.((Uniform(0, 80)))
+            end
         end
 
         # nominal with worst case
@@ -211,7 +214,7 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test1", true, 5, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.5, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
+test("test1", false, 7, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.8, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
 
 redirect_stdout(stdout)
 
