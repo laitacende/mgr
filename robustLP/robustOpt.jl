@@ -1,5 +1,6 @@
 module robustOpt
-    export minmax, maxmin, recoverableMin, lightRobustnessMin, lightRobustnessMax, recoverableMinInf
+    export minmax, maxmin, recoverableMin, lightRobustnessMin, lightRobustnessMax, recoverableMinInf,
+    lightRobustnessMinOpt, lightRobustnessMaxOpt
     using JuMP, Cbc, SparseArrays
 
     include("./minmax.jl")

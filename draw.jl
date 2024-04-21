@@ -218,4 +218,5 @@ end
 
 # recovAll("t1_recov")
 # lightAll("t1_light")
-all(3, 3, "t1")
+# all(kperIdx, rhoIdx, fileName)
+all(3, 2, "t1")
