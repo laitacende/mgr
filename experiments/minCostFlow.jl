@@ -164,12 +164,12 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
                 c12[r] = c[r] + cU1[r] / 2
                 cU12[r] = cU1[r] / 2
             end
-
+            # raczej normalne, a nie te przesunięte (złe dla gamma = 0 wychodzą)
             A12 = [sparse([c12' -1]); A spzeros(n, 1); -A spzeros(n, 1)]
             model1, dict1, obj1 = robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
-            sparse([0; b; -b]), A12, Gamma1, J1, cU12, true, false, false)
+            sparse([0; b; -b]), A1, Gamma1, J1, cU1, true, false, false)
             time = @elapsed robustOpt.minmax(c1, spzeros(n*n + 1), [u; 100000000000000000],
-            sparse([0; b; -b]), A12, Gamma1, J1, cU12, true, false, false)
+            sparse([0; b; -b]), A1, Gamma1, J1, cU1, true, false, false)
             constraints = checkConstraints(A, [], b, dict1, n * n, 0, 0)
             write(fMinMax, string(Gamma) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
 
@@ -227,7 +227,7 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test1", false, 7, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.8, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
+test("test2", false, 7, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.8, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
 
 redirect_stdout(stdout)
 

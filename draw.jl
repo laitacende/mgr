@@ -1,7 +1,7 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
 
-fileName = "test1"
+fileName = "test2"
 
 dfNom = CSV.read("./" * fileName * "_nom.txt", DataFrame, delim=" ", header=false)
 dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=false)
@@ -216,7 +216,7 @@ function all(kperIdx, rhoIdx, fileName)
     # TODO adjustable
 end
 
-recovAll("t1_recov")
-lightAll("t1_light")
+recovAll("t2_recov")
+lightAll("t2_light")
 # all(kperIdx, rhoIdx, fileName)
-all(3, 2, "t1")
+all(3, 2, "t2")
