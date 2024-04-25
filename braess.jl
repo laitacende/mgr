@@ -13,7 +13,7 @@ A = [10 50 5 50 10  -1; 1 -1 -1 0 0 0; -1 1 1 0 0 0; 0 0 1 1 -1 0; 0 0 -1 -1 1 0
 b = [0, 0, 0, 0, 0, 1, -1, 1, -1]
 Gamma = [d, 0, 0, 0, 0, 0, 0, 0, 0]
 J = [[1, 2, 3, 4, 5], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[], Int64[]]
-AU = [5 15 5 15 5]
+AU = [10 30 10 30 10 0]
 model, dict, cost = robustOpt.minmax(c, l, u, b, A, Gamma, J, AU, true, true, false)
 print(dict)
 # println("tutej ",  15*dict[:x][1] + 65*dict[:x][2] + 10*dict[:x][3] +

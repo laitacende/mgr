@@ -149,6 +149,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
         write(fNomWorst, string(obj01) * " " * string(time) * "\n")
 
          for Gamma in Gammas
+            println(stderr, "Gamma " * string(Gamma))
             # minmax
             Gamma1[1] = Gamma * n * n
             cU1 = reshape(cU, 1, length(cU))
@@ -227,8 +228,14 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test2", false, 7, [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0], 8, 0.8, [0.1, 0.3, 0.5, 0.8, 1.0], [0.1, 0.2, 0.5, 0.8, 1.0])
+test("test1", false, 100, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 25, 0.7,
+[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
 redirect_stdout(stdout)
+
+# test1 parametry
+# test("test1", false, 100, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 20, 0.7,
+# [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+# graf i pierwsze scenariusze Random.seed!(456789)
 
 # recov dla mniejszej gammy (0.0., 0.1) pojawiają się jakieś zmiany, dla innych nie
