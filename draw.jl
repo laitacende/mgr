@@ -1,7 +1,7 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
 
-fileName = "test2"
+fileName = "test1"
 
 dfNom = CSV.read("./" * fileName * "_nom.txt", DataFrame, delim=" ", header=false)
 dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=false)

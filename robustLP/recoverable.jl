@@ -5,7 +5,7 @@
     cU - uncertainties on costs vector
     b - right sides vector
     A - constraint matrix
-    Gamma - array of Gammas for rows
+    Gamma - budget of uncertainty
     K - maximum distance of modifications (first vector norm)
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
@@ -17,7 +17,7 @@ function recoverableMin(d::Union{Vector, SparseVector, SparseMatrixCSC}, c::Unio
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Float64, K::Float64, printModel::Bool, printSolution::Bool)
 
-    n = size(d)[1]
+    n = size(A)[2]
     if (size(c)[1] != n)
         throw("Vector c has wrong dimension")
     end
