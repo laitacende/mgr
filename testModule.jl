@@ -28,7 +28,7 @@ A = [300 -1; 1 0; -1 0; 0 0; 0 0; 1 0; 0 0; 0 0]
 # A = [300 -1; -1 0; 0 0]
 D = [300 300; 1 1; 0 0; -1 0; 0 -1;0  0; 1 0; 0 1]
 # D = [300; 0; -1]
-Gamma = 1.0
+Gamma = 2.0
 # adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 #     b::Union{Vector, SparseVector, SparseMatrixCSC},
 #     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
@@ -36,3 +36,7 @@ Gamma = 1.0
 #     Gamma::Float64, bU::Union{Vector, SparseVector},
 #     printModel::Bool, printSolution::Bool)
 robustOpt.adjustableMinB(c, b, A, D, Gamma, bU, true, false)
+
+m, dict, opt = robustOpt.nominal([300, 300, 300], [1000, -160, -300, -340, 200, 350, 350],
+     [1 1 1; -1 0 0; 0 -1 0; 0 0 -1; 1 0 0; 0 1 0; 0 0 1], true, false)
+println(dict)

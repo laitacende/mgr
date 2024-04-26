@@ -24,7 +24,7 @@ timeMM = [combine(groupby(dfMM, 1), 4 => minimum)[!, 2], combine(groupby(dfMM, 1
 constraintsMM = [ combine(groupby(dfMM, 1), 3 => minimum)[!, 2], combine(groupby(dfMM, 1), 3 => mean)[!, 2], combine(groupby(dfMM, 1), 3 => maximum)[!, 2]]
 
 # recov
-KPerc =  [0.1, 0.3, 0.5, 0.8, 1.0]
+KPerc =  [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 # 4 wartości dla każdego kPer
 objectiveR = []
 timeR = []
@@ -36,7 +36,7 @@ for i in 1:length(KPerc)
 end
 
 # light robustness
-rhos = [0.1, 0.2, 0.5, 0.8, 1.0]
+rhos = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 objectiveL = []
 timeL = []
 constraintsL = []
@@ -216,7 +216,7 @@ function all(kperIdx, rhoIdx, fileName)
     # TODO adjustable
 end
 
-recovAll("t2_recov")
-lightAll("t2_light")
+recovAll("t1_recov")
+lightAll("t1_light")
 # all(kperIdx, rhoIdx, fileName)
-all(3, 2, "t2")
+all(3, 2, "t1")

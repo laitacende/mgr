@@ -51,8 +51,8 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     end
 
 
-    model = Model(Cbc.Optimizer)
-    set_attribute(model, "logLevel", 1)
+    model = Model(GLPK.Optimizer)
+#     set_attribute(model, "logLevel", 1)
 #     if (bounds)
 #         @variable(model, l[i] <= x[i=1:n] <= u[i])
 #     else

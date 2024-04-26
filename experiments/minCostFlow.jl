@@ -118,7 +118,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 #     identity = [Matrix(1I, n*n, n*n) zeros(n*n, 1)]
     identity = [spdiagm(0 => ones(n * n)) spzeros(n*n, 1)]
     Gamma2 = [0.0 for i in 1:(2*n + 1 + n*n)]
-    Random.seed!(4843548)
+    Random.seed!(789543)
     for i in 1:steps
         println(stderr, string(i))
         cU = spzeros(n * n)
@@ -239,5 +239,6 @@ redirect_stdout(stdout)
 # graf i pierwsze scenariusze Random.seed!(456789)
 #  Random.seed!(1234567) 10 powtórzeń
 # Random.seed!(4843548) 10 powtórzeń
+# Random.seed!(789543) 15 powtórzeń
 
 # recov dla mniejszej gammy (0.0., 0.1) pojawiają się jakieś zmiany, dla innych nie
