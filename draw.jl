@@ -8,6 +8,7 @@ dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=
 dfAdj = CSV.read("./" * fileName * "_adj.txt", DataFrame, delim=" ", header=false)
 dfWorst = CSV.read("./" * fileName * "_nomWorst.txt", DataFrame, delim=" ", header=false)
 dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
+dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
 dfMM = CSV.read("./" * fileName * "_minmax.txt", DataFrame, delim=" ", header=false)
 
 x = combine(groupby(dfMM, 1), 2 => mean)[!, 1]
@@ -33,6 +34,15 @@ for i in 1:length(KPerc)
     append!(objectiveR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 2 => maximum)[!, 2]]])
     append!(timeR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 4 => maximum)[!, 2]]])
     append!(constraintsR, [[combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => minimum)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => mean)[!, 2], combine(groupby(dfRecov, 1), 4*(i - 1) + 3 => maximum)[!, 2]]])
+end
+
+objectiveRInf = []
+timeRInf = []
+constraintsRInf = []
+for i in 1:length(KPerc)
+    append!(objectiveRInf, [[combine(groupby(dfRecovInf, 1), 4*(i - 1) + 2 => minimum)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 2 => mean)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 2 => maximum)[!, 2]]])
+    append!(timeRInf, [[combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => minimum)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => mean)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => maximum)[!, 2]]])
+    append!(constraintsRInf, [[combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => minimum)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => mean)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => maximum)[!, 2]]])
 end
 
 # light robustness
@@ -101,6 +111,37 @@ function recovAll(fileName)
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(KPerc)
         plot!(p, x, constraintsR[i][2], label="średnia " * string(KPerc[i]))
+    end
+    savefig(p, fileName * "_constraints.png")
+    savefig(p, fileName * "_constraints.pdf")
+end
+
+function recovAllInf(fileName)
+    p = plot(x, objectiveRInf[1][2], label="średnia " * string(KPerc[1]),
+    title="Wartość funkcji celu")
+    xlabel!(p, "Γ")
+    ylabel!(p, "wartość funkcji celu")
+    for i in 2:length(KPerc)
+        plot!(p, x, objectiveRInf[i][2], label="średnia " * string(KPerc[i]))
+    end
+    savefig(p, fileName * "_obj.png")
+    savefig(p, fileName * "_obj.pdf")
+
+    p = plot(x, timeRInf[1][2], label="średnia " * string(KPerc[1]), title="Czas" )
+    xlabel!(p, "Γ")
+    ylabel!(p, "czas, s")
+    for i in 2:length(KPerc)
+        plot!(p, x, timeRInf[i][2], label="średnia " * string(KPerc[i]))
+    end
+    savefig(p, fileName * "_time.png")
+    savefig(p, fileName * "_time.pdf")
+
+    p = plot(x, constraintsRInf[1][2], label="średnia " * string(KPerc[1]),
+    title="Liczba naruszonych ograniczeń" )
+    xlabel!(p, "Γ")
+    ylabel!(p, "naruszone ograniczenia, %")
+    for i in 2:length(KPerc)
+        plot!(p, x, constraintsRInf[i][2], label="średnia " * string(KPerc[i]))
     end
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
@@ -176,6 +217,10 @@ function all(kperIdx, rhoIdx, fileName)
     plot!(p, x, objectiveR[kperIdx],
     labels=["min R" * string(KPerc[kperIdx]) "średnia R" * string(KPerc[kperIdx]) "max R" * string(KPerc[kperIdx])],
     c=[:coral1 :red1 :darkred])
+    # recov inf
+    plot!(p, x, objectiveRInf[kperIdx],
+    labels=["min RInf" * string(KPerc[kperIdx]) "średnia RInf" * string(KPerc[kperIdx]) "max RInf" * string(KPerc[kperIdx])],
+    c=[:gray65 :gray27 :gray6])
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
@@ -196,6 +241,10 @@ function all(kperIdx, rhoIdx, fileName)
     plot!(p, x, timeR[kperIdx],
     labels=["min R" * string(KPerc[kperIdx]) "średnia R" * string(KPerc[kperIdx]) "max R" * string(KPerc[kperIdx])],
     c=[:coral1 :red1 :darkred])
+    # recov Inf
+    plot!(p, x, timeRInf[kperIdx],
+    labels=["min RInf" * string(KPerc[kperIdx]) "średnia RInf" * string(KPerc[kperIdx]) "max RInf" * string(KPerc[kperIdx])],
+    c=[:gray65 :gray27 :gray6])
     savefig(p, fileName * "_time.png")
     savefig(p, fileName * "_time.pdf")
 
@@ -211,12 +260,17 @@ function all(kperIdx, rhoIdx, fileName)
     plot!(p, x, constraintsR[kperIdx],
     labels=["min R" * string(KPerc[kperIdx]) "średnia R" * string(KPerc[kperIdx]) "max R" * string(KPerc[kperIdx])],
      c=[:coral1 :red1 :darkred])
+     # recov Inf
+     plot!(p, x, constraintsRInf[kperIdx],
+    labels=["min RInf" * string(KPerc[kperIdx]) "średnia RInf" * string(KPerc[kperIdx]) "max RInf" * string(KPerc[kperIdx])],
+     c=[:gray65 :gray27 :gray6])
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
     # TODO adjustable
 end
 
 recovAll("t1_recov")
+recovAllInf("t1_recov_inf")
 lightAll("t1_light")
 # all(kperIdx, rhoIdx, fileName)
 all(3, 2, "t1")

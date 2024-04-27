@@ -7,11 +7,12 @@ dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=
 dfAdj = CSV.read("./" * fileName * "_adj.txt", DataFrame, delim=" ", header=false)
 dfWorst = CSV.read("./" * fileName * "_nomWorst.txt", DataFrame, delim=" ", header=false)
 dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
+dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
 dfMM = CSV.read("./" * fileName * "_minmax.txt", DataFrame, delim=" ", header=false)
 
 # TODO add adj !!!!!!!!!!!
-dfs = [dfLight, dfRecov, dfMM]
-names = ["light robustness", "recoverable", "min-max"]
+dfs = [dfLight, dfRecov, dfMM, dfRecovInf]
+names = ["light robustness", "recoverable", "min-max", "recoverable inf"]
 
 fOM = open("./" * fileName * "_median_obj.txt", "w")
 fCM = open("./" * fileName * "_median_constraints.txt", "w")

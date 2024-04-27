@@ -51,32 +51,56 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     end
 
 
-    model = Model(GLPK.Optimizer)
-#     set_attribute(model, "logLevel", 1)
+    model = Model(Cbc.Optimizer)
+    set_attribute(model, "logLevel", 1)
 #     if (bounds)
 #         @variable(model, l[i] <= x[i=1:n] <= u[i])
 #     else
 #         @variable(model, x[i=1:n] >= 0)
 #     end
     @variable(model, x[i=1:n] >= 0)
-    @variable(model, z >= 0)
-    @variable(model, p[i in 1:m] >= 0)
+    @variable(model, z[i in 1:m] >= 0)
+#     @variable(model, z >= 0)
+    @variable(model, p[i in 1:m, j in 1:m] >= 0)
+#      @variable(model, p[i in 1:m] >= 0)
     @variable(model, y[1:k] >= 0)
-    @variable(model, d >= 0)
+#     @variable(model, d >= 0)
     @variable(model, Q[i in 1:k, j in 1:m])
 
-    for i in 1:m
-        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - b[i] * d
-        + sum(D[i, j] * y[j] for j in 1:k) + z * Gamma + sum(p[j] for j in 1:m) <= 0)
+#     for i in 1:m
+#         @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - b[i]
+#         + sum(D[i, j] * y[j] for j in 1:k) + z * Gamma + sum(p[j] for j in 1:m) <= 0)
+#         for j in 1:m
+#             if i != j
+#                 @constraint(model, z + p[j] >= sum(D[i, l] * Q[l, j] for l in 1:k))
+#             else
+#                 @constraint(model, z + p[j] >= sum(D[i, l] * Q[l, j] for l in 1:k) - bU[i])
+#             end
+#         end
+#     end
+
+     for i in 1:m
+        @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - b[i]
+        + sum(D[i, j] * y[j] for j in 1:k) + z[i] * Gamma + sum(p[i, j] for j in 1:m) <= 0)
         for j in 1:m
-            if i != m
-                @constraint(model, z + p[j] >= sum(D[i, l] * Q[l, j] for l in 1:k))
+            if i != j
+                @constraint(model, z[i] + p[i, j] >= sum(D[i, l] * Q[l, j] for l in 1:k))
             else
-                @constraint(model, z + p[j] >= sum(D[i, l] * Q[l, j] for l in 1:k) - bU[j] * d)
+                @constraint(model, z[i] + p[i, j] >= sum(D[i, l] * Q[l, j] for l in 1:k) - bU[i])
             end
         end
     end
-    @constraint(model, d == 1)
+
+    for r in 1:m
+        if r == 1 || r==2 || r==4 || r==5 || r==6 || r >= 8
+            @constraint(model, Q[1, r] == 0)
+        end
+        if (r==1 || r == 2 || r == 5 || r==6
+            || r > 9)
+            @constraint(model, Q[2, r] == 0)
+        end
+    end
+#     @constraint(model, d == 1)
     @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
     if (printModel)
         println(model)
@@ -89,8 +113,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     d = Dict(
         k => value.(v) for
         (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
-    println(d)
-    return model
+    return model, d
 
 end
 
