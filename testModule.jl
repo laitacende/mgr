@@ -20,12 +20,12 @@ using .robustOpt
 c = [0, 1]
 b = [0, 2000, -150, -200, -250, -290, 350, 350, 350, 350]
 # b = [0, -1, -1]
-bU = [0, 0, 0, -50, -100, -50, 0, 0, 0, 0]
+bU = [0, 0, -50, -50, -100, -50, 0, 0, 0, 0]
 A = [300 -1; 1 0; -1 0; 0 0; 0 0; 0 0; 1 0; 0 0; 0 0; 0 0]
 # A = [300 -1; -1 0; 0 0]
 D = [300 300 300; 1 1 1; 0 0 0; -1 0 0; 0 -1 0; 0 0 -1;0 0 0; 1 0 0; 0 1 0; 0 0 1]
 # D = [300; 0; -1]
-Gammas = [0.5, 1.0, 2.0, 3.0]
+Gammas = [0.2, 0.5, 1.0, 2.0, 3.0]
 # adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 #     b::Union{Vector, SparseVector, SparseMatrixCSC},
 #     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
@@ -36,7 +36,7 @@ for Gamma in Gammas
     m, dict = robustOpt.adjustableMinB(c, b, A, D, Gamma, bU, false, false)
     println(Gamma, " ", dict)
 end
-m, dict, opt = robustOpt.nominal([300, 300, 300, 300], [2000, -150, -250, -350, -340, 350, 350, 350, 350],
+m, dict, opt = robustOpt.nominal([300, 300, 300, 300], [2000, -200, -250, -350, -340, 350, 350, 350, 350],
      [1 1 1 1; -1 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1; 1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1], false, false)
 println(opt, "obj worst")
 

@@ -79,6 +79,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 #         end
 #     end
 
+
      for i in 1:m
         @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - b[i]
         + sum(D[i, j] * y[j] for j in 1:k) + z[i] * Gamma + sum(p[i, j] for j in 1:m) <= 0)
@@ -112,7 +113,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 
     d = Dict(
         k => value.(v) for
-        (k, v) in object_dictionary(model) if v isa AbstractArray{VariableRef})
+        (k, v) in object_dictionary(model))
     return model, d
 
 end
