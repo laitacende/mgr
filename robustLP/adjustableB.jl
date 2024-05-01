@@ -7,6 +7,7 @@
     D - constraint matrix for wait and see variables
     Gamma - budget of uncertainty (discrete)
     bU - uncertainties for vector b
+    zeroQ - indices of matrix Q which are to be set to 0 in form of tuples (row, column)
     printModel - when true model is printed
     printSolution - when true the solution (decision variables) is printed
 """
@@ -15,6 +16,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     D::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     Gamma::Float64, bU::Union{Vector, SparseVector, SparseMatrixCSC},
+    zeroQ::Vector,
     printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
@@ -67,6 +69,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 #     @variable(model, d >= 0)
     @variable(model, Q[i in 1:k, j in 1:m])
 
+
 #     for i in 1:m
 #         @constraint(model, sum(A[i, j] * x[j] for j in 1:n) - b[i]
 #         + sum(D[i, j] * y[j] for j in 1:k) + z * Gamma + sum(p[j] for j in 1:m) <= 0)
@@ -90,6 +93,10 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
                 @constraint(model, z[i] + p[i, j] >= sum(D[i, l] * Q[l, j] for l in 1:k) - bU[i])
             end
         end
+    end
+
+    for (a, b) in zeroQ
+        @constraint(model, Q[a, b] == 0)
     end
 
 #     for r in 1:m

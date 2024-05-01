@@ -6,7 +6,7 @@ using Random, SparseArrays, Distributions, LinearAlgebra, Base
 import Base.stderr
 
 per = 0.5
-# redirect_stdout(open("/dev/null", "w"))
+redirect_stdout(open("/dev/null", "w"))
 
 # periods
 T = 7
@@ -168,14 +168,35 @@ for i in 1:n
     end
 end
 
+zeroQ = []
+# tylko tam zerujemy gdzie są demandy
+# v amin
+for k in 1:n
+    for j in 1:(T - 1)
+        for i in (j + 2):T
+            append!([((k - 1) * (T - 1) + j + n + 2, i)])
+        end
+    end
+end
+# v max
+for k in 1:n
+    for j in 1:(T - 1)
+        for i in (j + 2):T
+            append!([((k - 1) * (T - 1) + j + n + 2 + T, i)])
+        end
+    end
+end
+
 vm = [-VMin + v1 for i in 1:T]
 vma = [VMax - v1 for i in 1:T]
 b  = sparse([Cap; vm; vma; P; [1]; [-1]])
 bA = sparse([0; Cap; -dSum; dSum; P; [1]; [-1]])
 bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
-model, dict, opt = adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, 1.0, bAU, false, true)
-println(dict[:x])
-println(dict[:y])
+model, dict, opt = adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, 1.0, bAU, zeroQ, false, true)
+println(stderr, dict[:x])
+println(stderr, dict[:y])
+# println(stderr, dict[:Q])
+println(stderr, "adj " * string(opt))
 J = [Int64[] for i in 1:size(A)[1]]
 for i in (n + 1):(n + T + T)
     J[i] = [n*T + 1]
@@ -188,11 +209,14 @@ end
 bMU = [spzeros(length(Cap)); -dUSum; dUSum; spzeros(length(P) + 2)]
 z = zeros(n + T + T + n * T + 2, n * T)
 model, dict, opt = robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, [z bMU], false, false, false)
+println(stderr, "min max " * string(opt))
+println(stderr, dict[:x])
 ANom = A[:, 1:(size(A)[2] - 1)]
 ANom = ANom[1:(size(A)[1] - 2), :]
-println(size(ANom), size([Cap; vm; vma; P]), size(A))
 # worst
 vmNom = [-VMin - v1 - dSum[i] - dUSum[i] for i in 1:T]
 vmaNom = [VMax - v1 + dSum[i] + dUSum[i] for i in 1:T]
 model, dict, opt = robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
+println(stderr, "worst " * string(opt))
+println(stderr, dict[:x])
 redirect_stdout(stdout)
