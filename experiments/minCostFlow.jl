@@ -239,6 +239,7 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
     close(fRecovInf)
     close(fAdj)
     close(fNom)
+    close(fNomWorst)
 end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
