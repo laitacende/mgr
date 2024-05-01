@@ -16,17 +16,24 @@ n = 5
 # jak to zrównoważyć?
 
 c = spzeros(n * T)
-c .+= rand.((Uniform(0, 100)))
+for t in 1:length(c)
+    c[t] += rand((Uniform(0, 100)))
+end
+
 # maximum nad minimum storage at warehause
 VMax = rand(Uniform(1000, 100000))
 VMin = rand(Uniform(0, 900))
 # total production of factory accumulated over time
 Cap = spzeros(n)
-Cap .+= rand.((Uniform(500, 10000)))
+for t in 1:length(Cap)
+    Cap[t] += rand((Uniform(500, 10000)))
+end
 
 # demands
 d = spzeros(T)
-d .+= rand.((Uniform(0, 100)))
+for t in 1:length(d)
+    d[t] += rand((Uniform(0, 100)))
+end
 # ile produktu w magazynie na poczatku
 v1 = rand(Uniform(0, 50))
 
@@ -50,15 +57,21 @@ A[n + T + T + n * T + 2, n * T + 1] = -1
 # i v max przerzucić do ograniczeń
 # + ograniczenia na te zmienna zeby byla 1
 AA = spzeros(n + T + T + n * T + 1 + 2, n + 2)
+# fabryka1_okres1 fabryka1_okres2...
+# pierwszy okres w AA
+B = spzeros(n + T + T + n * T + 1 + 2, (n) * (T - 1))
 # produkcja wszystkich fabryk w pierwszym okresie
 for i in 1:n
     AA[1, i] = c[i]
 end
+for i in 2:n
+    for j in 1:T
+        B[1, (i - 2) * (T - 1) + j] = c[(i - 1) * (T - 1) + j]
+    end
+end
 AA[1, n + 1] = -1
 AA[n + T + T + n * T + 1 + 1, n + 2] = 1
 AA[n + T + T + n * T + 1 + 2, n + 2] = -1
-# fabryka1_okres1 fabryka1_okres2...
-B = spzeros(n + T + T + n * T + 1 + 1, (n - 1) * T)
 
 
 # sumy cząstkowe d i du
@@ -80,25 +93,18 @@ for i in 1:n
     for j in 1:T
         A[i, j + T * (i - 1)] = 1
     end
-    A[i, n*T+1] = -1
+    A[i, n*T+1] = 0
 end
 for i in 2:(n+1)
-    if i == 2
-        for j in 1:n
-            AA[i, j] = 1
-        end
-#         AA[i, n + 1] = 0
-    end
-    if i != 2 # pierwszy okres ma same 0 tutaj
-        for j in 1:T
-            B[i, j + T * (i - 3)] = 1
-        end
+    AA[i, i - 1] = 1
+    for j in 1:(T-1)
+        B[i, (i - 2) * (T - 1) + j] = 1
     end
 end
 
 # popyt i ograniczenia na produkcję razem
 # v_min <= v_1 + adjustable -> -v1-... >= -v_min
-for i in (n + 1):(n + 1 + T)
+for i in (n + 1):(n + T)
     for k in 1:n
         for j in 1:(i - n)
             A[i, (k - 1) * T + j] = -1
@@ -107,39 +113,39 @@ for i in (n + 1):(n + 1 + T)
     A[i, n*T+1] = dSum[i - n]
 end
 
-for i in (n + 2):(n + 2 + T)
+for i in (n + 2):(n + 1 + T)
     for j in 1:n
     # pierwszy okres jest zawsze
         AA[i, j] = -1
     end
     AA[i, n + 2] = VMin - v1
-    for k in 2:n
-        for j in 1:(i - n - 1)
-            B[i, (k - 1) * T + j] = -1
+    for k in 1:n
+        for j in 1:(i - n - 2)
+            B[i, (k - 1) * (T - 1) + j] = -1
         end
     end
 end
 
 # ograniczenie <= v_max - v_1
-for i in (n + 1):(n + 1 + T)
+for i in (n + 1 + T):(n + T + T)
     for k in 1:n
-        for j in 1:(i - n)
+        for j in 1:(i - n - T)
             A[i, (k - 1) * T + j] = 1
         end
     end
-     A[i, n*T+1] = dSum[i - n]
+     A[i, n*T+1] = -dSum[i - n - T]
 end
 
-for i in (n + 2):(n + 2 + T)
+
+for i in (n + 2 + T):(n + 1 + T + T)
     for j in 1:n
     # pierwszy okres jest zawsze
         AA[i, j] = 1
     end
-#     AA[i, n + 1] = 0
-     AA[i, n + 2] = v1 - VMax
-    for k in 2:n
-        for j in 1:(i - n - 1)
-            B[i, (k - 1) * T + j] = 1
+    AA[i, n + 2] = v1 - VMax
+    for k in 1:n
+        for j in 1:(i - n - 2 - T)
+            B[i, (k - 1) * (T - 1) + j] = 1
         end
     end
 end
@@ -149,28 +155,44 @@ for i in 1:n
     for j in 1:T
         A[(n + T + T + 1) + (i - 1) * T + j, (i - 1) * T + j] = 1
     end
-     A[i, n*T+1] = -1
+     A[i, n*T+1] = 0
 end
 
 for i in 1:n
-    for j in 1:T
-        AA[(n + T + T + 2) + (i - 1) * T + j, j] = 1
+    AA[(n + T + T + 2) + (i - 1) * T, i] = 1
+end
+
+for i in 1:n
+    for j in 2:(T - 1)
+        B[(n + T + T + 2) + (i - 1) * T + j, (i - 1) * (T - 1) + j] = 1
     end
 end
 
-for i in 1:(n-1)
-    for j in 1:T
-        B[(n + T + T + 2) + (i - 1) * T + j, (i - 1) * T + j] = 1
-    end
-end
-
-# VmIN I VmAX t RAZY!
 vm = [-VMin + v1 for i in 1:T]
 vma = [VMax - v1 for i in 1:T]
-b  = [Cap; vm; vma; P; 1; -1]
-bA = [0; Cap; -dSum; dSum; P; 1; -1]
-bAU = [spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0]
-adjustableMinB(c, bA, AA, B, 1.0, bAU,
-    false, true)
+b  = sparse([Cap; vm; vma; P; [1]; [-1]])
+bA = sparse([0; Cap; -dSum; dSum; P; [1]; [-1]])
+bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
+model, dict, opt = adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, 1.0, bAU, false, true)
+println(dict[:x])
+println(dict[:y])
+J = [Int64[] for i in 1:size(A)[1]]
+for i in (n + 1):(n + T + T)
+    J[i] = [n*T + 1]
+end
 
+Gamma = spzeros(size(A)[1])
+for i in (n + 1):(n + T + T)
+    Gamma[i] = 1
+end
+bMU = [spzeros(length(Cap)); -dUSum; dUSum; spzeros(length(P) + 2)]
+z = zeros(n + T + T + n * T + 2, n * T)
+model, dict, opt = robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, [z bMU], false, false, false)
+ANom = A[:, 1:(size(A)[2] - 1)]
+ANom = ANom[1:(size(A)[1] - 2), :]
+println(size(ANom), size([Cap; vm; vma; P]), size(A))
+# worst
+vmNom = [-VMin - v1 - dSum[i] - dUSum[i] for i in 1:T]
+vmaNom = [VMax - v1 + dSum[i] + dUSum[i] for i in 1:T]
+model, dict, opt = robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
 redirect_stdout(stdout)

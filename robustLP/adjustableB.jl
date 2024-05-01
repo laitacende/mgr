@@ -14,7 +14,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
     D::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
-    Gamma::Float64, bU::Union{Vector, SparseVector},
+    Gamma::Float64, bU::Union{Vector, SparseVector, SparseMatrixCSC},
     printModel::Bool, printSolution::Bool)
 
     n = size(c)[1]
@@ -92,15 +92,15 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
         end
     end
 
-    for r in 1:m
-        if r == 1 || r==2 || r==4 || r==5 || r==6 || r >= 8
-            @constraint(model, Q[1, r] == 0)
-        end
-        if (r==1 || r == 2 || r == 5 || r==6
-            || r > 9)
-            @constraint(model, Q[2, r] == 0)
-        end
-    end
+#     for r in 1:m
+#         if r == 1 || r==2 || r==4 || r==5 || r==6 || r >= 8
+#             @constraint(model, Q[1, r] == 0)
+#         end
+#         if (r==1 || r == 2 || r == 5 || r==6
+#             || r > 9)
+#             @constraint(model, Q[2, r] == 0)
+#         end
+#     end
 #     @constraint(model, d == 1)
     @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
     if (printModel)
@@ -114,7 +114,7 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
     d = Dict(
         k => value.(v) for
         (k, v) in object_dictionary(model))
-    return model, d
+    return model, d, objective_value(model)
 
 end
 

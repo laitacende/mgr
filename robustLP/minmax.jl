@@ -15,17 +15,19 @@
 function minmax(c::Union{Vector, SparseVector, SparseMatrixCSC}, l::Union{Vector, SparseVector, SparseMatrixCSC},
     u::Union{Vector, SparseVector, SparseMatrixCSC}, b::Union{Vector, SparseVector, SparseMatrixCSC},
     A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC},
-    Gamma::Vector, J::Vector{Vector{Int64}},
+    Gamma::Union{Vector, SparseVector}, J::Vector{Vector{Int64}},
     AU::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, bounds::Bool, printModel::Bool,
     printSolution::Bool)
 
-    n = size(l)[1]
-    if (size(u)[1] != n)
-        throw("Vector u has wrong dimension")
-    end
+    n = size(c)[1]
+    if (size(u)[1] > 0 && size(l)[1] > 0)
+        if (size(u)[1] != n)
+            throw("Vector u has wrong dimension")
+        end
 
-    if (size(c)[1] != n)
-        throw("Vector c has wrong dimension")
+        if (size(l)[1] != n)
+            throw("Vector c has wrong dimension")
+        end
     end
 
     m = size(A)[1] # number of contraints
@@ -51,7 +53,7 @@ function minmax(c::Union{Vector, SparseVector, SparseMatrixCSC}, l::Union{Vector
 
     for j in 1:size(J)[1]
         if (Gamma[j] > length(J[j]))
-            throw("Gamma " + string(j), " has wrong value")
+            throw("Gamma " * string(j) * " has wrong value")
         end
     end
 
