@@ -31,10 +31,12 @@ end
 
 
 function test(fileName, steps, Gammas, per, rhos, T, n)
-   tmp = abs(rand(Int))
-println(stderr, tmp)
-Random.seed!(tmp)
+    tmp = abs(rand(Int))
+    println(stderr, tmp)
+    Random.seed!(8288897616298075162)
 # 1353344747400700187
+# 6087208597166880550
+# 8288897616298075162
 
     fMinMax = open("./" * fileName * "_minmax_demands.txt", "a")
     fLight = open("./" * fileName * "_light_demands.txt", "a")
@@ -171,7 +173,7 @@ Random.seed!(tmp)
     # v amin
     for k in 1:n
         for j in 1:(T - 1)
-            for i in (j + 1):T
+            for i in (j + 2):T
                 append!(zeroQ, [((k - 1) * (T - 1) + j, n + i + 1)])
             end
         end
@@ -179,7 +181,7 @@ Random.seed!(tmp)
     # v max
     for k in 1:n
         for j in 1:(T - 1)
-            for i in (j + 1):T
+            for i in (j + 2):T
                append!(zeroQ, [((k - 1) * (T - 1) + j, n + T + i + 1)])
             end
         end
@@ -248,7 +250,7 @@ Random.seed!(tmp)
             time = @elapsed robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
 #             write(fNom, string(obj0) * " " * string(time) * "\n")
             println(stderr, "nom " * string(obj0) * " " * string(time))
-            println(stderr, dict0[:x])
+#             println(stderr, dict0[:x])
         end
 
         # worst
@@ -289,13 +291,13 @@ Random.seed!(tmp)
             # adjustable
             bA = sparse([0; Cap; -dSum; dSum; P; [1]; [-1]])
             bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
-            model3, dict3, obj3 = robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, 1.0, bAU, zeroQ, false, false)
+            model3, dict3, obj3 = robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
             time = @elapsed robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
             constraints = checkConstraints(A, [], b, dict3, n * n, 0, 0)
 #             write(fAdj, string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
             print(stderr, "adj " *  string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
-            println(stderr, dict3[:x])
-            println(stderr, dict3[:y])
+#             println(stderr, dict3[:x])
+#             println(stderr, dict3[:y])
        end
     end
     close(fMinMax)
@@ -305,6 +307,6 @@ Random.seed!(tmp)
     close(fNomWorst)
 end
 # (fileName, steps, Gammas, per, rhos, T, n)
-test("test3", 5, [1.0], 0.7, [0.02], 7, 3)
+test("test3", 5, [1.0], 0.7, [0.1], 24, 5)
 
 redirect_stdout(stdout)
