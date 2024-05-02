@@ -99,15 +99,6 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
         @constraint(model, Q[a, b] == 0)
     end
 
-#     for r in 1:m
-#         if r == 1 || r==2 || r==4 || r==5 || r==6 || r >= 8
-#             @constraint(model, Q[1, r] == 0)
-#         end
-#         if (r==1 || r == 2 || r == 5 || r==6
-#             || r > 9)
-#             @constraint(model, Q[2, r] == 0)
-#         end
-#     end
 #     @constraint(model, d == 1)
     @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
     if (printModel)

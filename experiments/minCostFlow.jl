@@ -83,9 +83,10 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 
     # u = Vector{Float64}(undef, n * n)
     u = spzeros(n * n)
-    for t in 1:length(u)
-        u[t] += rand((Uniform(0, 25))) # 25 wczesniej 150
-    end
+    u .+= rand.((Uniform(0, 25))) # 25 wczesniej 150
+#     for t in 1:length(u)
+#         u[t] += rand((Uniform(0, 25))) # 25 wczesniej 150
+#     end
     b = spzeros(n)
 
     # must sum to 0
@@ -100,9 +101,10 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 
     # generate vectors
     c = spzeros(n * n)
-    for t in 1:length(c)
-        c[t] += rand((Uniform(0, 100)))
-    end
+    c .+= rand.((Uniform(0, 100)))
+#     for t in 1:length(c)
+#         c[t] += rand((Uniform(0, 100)))
+#     end
 
     # nominal
     identity0 = spdiagm(0 => ones(n * n))
@@ -123,7 +125,9 @@ function test(fileName, percent, steps, Gammas, n, per, KPerc, rhos)
 #     identity = [Matrix(1I, n*n, n*n) zeros(n*n, 1)]
     identity = [spdiagm(0 => ones(n * n)) spzeros(n*n, 1)]
     Gamma2 = [0.0 for i in 1:(2*n + 1 + n*n)]
-    Random.seed!(456789)
+
+    Random.seed!(00445599)
+
     for i in 1:steps
         println(stderr, string(i))
         cU = spzeros(n * n)
@@ -244,7 +248,7 @@ end
 
 # test(fileName, percent, steps, Gamma, n, per, KPerc, rhos)
 # 30 jest ok
-test("test2", false, 30, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 25, 0.7,
+test("test1", false, 11, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 25, 0.7,
 [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
 redirect_stdout(stdout)
@@ -252,11 +256,14 @@ redirect_stdout(stdout)
 # test1 parametry
 # test("test1", false, 100, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 20, 0.7,
 # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-# graf i pierwsze scenariusze Random.seed!(456789) 30 powtórzeń
-#  Random.seed!(1234567)
-# Random.seed!(4843548)
+# graf i pierwsze scenariusze Random.seed!(456789) 30 powtórzeń/ 100
+#  Random.seed!(1234567) 50 / 10
+# Random.seed!(4843548) / 10
 # Random.seed!(789543)
 # Random.seed!(669988)
 # Random.seed!(111222333)
 # Random.seed!(8459632)
+# 189
+# 11 powtózeń Random.seed!(00445599)
+
 # recov dla mniejszej gammy (0.0., 0.1) pojawiają się jakieś zmiany, dla innych nie
