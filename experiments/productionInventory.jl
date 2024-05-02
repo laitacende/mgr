@@ -36,8 +36,8 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     Random.seed!(8288897616298075162)
 # 1353344747400700187
 # 6087208597166880550
-# 8288897616298075162
-
+# 8288897616298075162 <- fajne
+# 5343414465449820459 też spoko
     fMinMax = open("./" * fileName * "_minmax_demands.txt", "a")
     fLight = open("./" * fileName * "_light_demands.txt", "a")
     fAdj = open("./" * fileName * "_adj_demands.txt", "a")
