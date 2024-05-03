@@ -21,7 +21,6 @@ function nominal(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
     for i in 1:m
         @constraint(model, sum(A[i, j] * x[j] for j in 1:n)  <= b[i])
     end
-
     @objective(model, Min, sum(c[i] * x[i] for i in 1:n))
 
     if (printModel)
@@ -30,7 +29,6 @@ function nominal(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
     if printSolution
         printNominal(model, n, x)
     end
-
     optimize!(model)
     zOpt = objective_value(model)
 

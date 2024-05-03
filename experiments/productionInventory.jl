@@ -33,12 +33,12 @@ end
 function test(fileName, steps, Gammas, per, rhos, T, n)
     tmp = abs(rand(Int))
     println(stderr, tmp)
-    Random.seed!()
+    Random.seed!(8443422321741948758)
 # 1353344747400700187
 # 6087208597166880550
 # 8288897616298075162 <- fajne
 # 5343414465449820459 też spoko
-# 799000105113493646 dla tego dziwne rzeczy
+# 8443422321741948758 dla tego dziwne rzeczy
     fMinMax = open("./" * fileName * "_minmax_demands.txt", "a")
     fLight = open("./" * fileName * "_light_demands.txt", "a")
     fAdj = open("./" * fileName * "_adj_demands.txt", "a")
@@ -51,6 +51,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     for t in 1:length(c)
         c[t] += rand((Uniform(0, 100)))
     end
+    println(stderr, " c " * string(c))
 
     # maximum nad minimum storage at warehause
     VMax = rand(Uniform(1000, 100000))
@@ -75,7 +76,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
         P[i] = rand(Uniform(50, 900))
     end
     # klasyczny problem, ale z przerzuconym wektorem prawych stron
-    A = spzeros(n + T + T + n * T + 2, n * T + 1)
+    A = zeros(n + T + T + n * T + 2, n * T + 1)
 #     ANom = spzeros(n + T + T + n * T + 2, n * T + 1)
     A[n + T + T + n * T + 1, n * T + 1] = 1
     A[n + T + T + n * T + 2, n * T + 1] = -1
@@ -86,10 +87,10 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     # f kosztu do ograniczenia i dodatkowo nowa zmienna, żeby w min
     # i v max przerzucić do ograniczeń
     # + ograniczenia na te zmienna zeby byla 1
-    AA = spzeros(n + T + T + n * T + 1 + 2, n + 2)
+    AA = zeros(n + T + T + n * T + 1 + 2, n + 2)
     # fabryka1_okres1 fabryka1_okres2...
     # pierwszy okres w AA
-    B = spzeros(n + T + T + n * T + 1 + 2, (n) * (T - 1))
+    B = zeros(n + T + T + n * T + 1 + 2, (n) * (T - 1))
     # produkcja wszystkich fabryk w pierwszym okresie
     for i in 1:n
         AA[1, i] = c[(i - 1) * T  + 1]
@@ -123,6 +124,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
         end
     end
 
+    # vmin
     for i in (n + 2):(n + 1 + T)
         for j in 1:n
         # pierwszy okres jest zawsze
@@ -135,7 +137,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
             end
         end
     end
-
+    # v max
     for i in (n + 2 + T):(n + 1 + T + T)
         for j in 1:n
         # pierwszy okres jest zawsze
@@ -152,7 +154,8 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     # produkcja w okresie
     for i in 1:n
         for j in 1:T
-            A[(n + T + T + 1) + (i - 1) * T + j, (i - 1) * T + j] = 1
+            # było (n + T + T + 1)
+            A[(n + T + T) + (i - 1) * T + j, (i - 1) * T + j] = 1
 #             ANom[(n + T + T + 1) + (i - 1) * T + j, (i - 1) * T + j] = 1
         end
          A[i, n*T+1] = 0
@@ -164,7 +167,8 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     end
 
     for i in 1:n
-        for j in 2:(T - 1)
+        for j in 1:(T - 1)
+            # było (n + T + T + 2)
             B[(n + T + T + 2) + (i - 1) * T + j, (i - 1) * (T - 1) + j] = 1
         end
     end
@@ -174,7 +178,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     # v amin
     for k in 1:n
         for j in 1:(T - 1)
-            for i in (j + 2):T
+            for i in (j + 2):T # j + 2
                 append!(zeroQ, [((k - 1) * (T - 1) + j, n + i + 1)])
             end
         end
@@ -182,7 +186,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     # v max
     for k in 1:n
         for j in 1:(T - 1)
-            for i in (j + 2):T
+            for i in (j + 2):T # j + 2
                append!(zeroQ, [((k - 1) * (T - 1) + j, n + T + i + 1)])
             end
         end
@@ -251,8 +255,22 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
             time = @elapsed robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
 #             write(fNom, string(obj0) * " " * string(time) * "\n")
             println(stderr, "nom " * string(obj0) * " " * string(time))
-#             println(stderr, dict0[:x])
+            println(stderr, dict0[:x])
         end
+
+println(stderr, "v max v min v1 " * string(VMax) * " " * string(VMin) * " " * string(v1))
+println(stderr, "d " * string(dSum))
+println(stderr, "du " * string(dUSum))
+println(stderr, "vmin + uncertainty ")
+for t in 1:T
+println(stderr,"okres min" * string(t) * " " * string(-v1 + dSum[t] + dUSum[t] + VMin))
+println(stderr,"okres max" * string(t) * " " * string(v1 - dSum[t] - dUSum[t] - VMax))
+end
+println(stderr, "nom")
+for t in 1:T
+println(stderr,"okres min" * string(t) * " " * string(-v1 + dSum[t]  + VMin))
+println(stderr,"okres max" * string(t) * " " * string(v1 - dSum[t]  - VMax))
+end
 
         # worst
         vmNomW = [-VMin + v1 - dSum[i] - dUSum[i] for i in 1:T]
@@ -288,7 +306,9 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
                    println(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
                 end
             end
-
+#             display(A)
+#             display(AA)
+#             display(B)
             # adjustable
             bA = sparse([0; Cap; -dSum; dSum; P; [1]; [-1]])
             bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
@@ -297,8 +317,8 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
             constraints = checkConstraints(A, [], b, dict3, n * n, 0, 0)
 #             write(fAdj, string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
             print(stderr, "adj " *  string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
-#             println(stderr, dict3[:x])
-#             println(stderr, dict3[:y])
+            println(stderr, "x "  * string(dict3[:x]))
+            println(stderr, "y " * string(dict3[:y]))
        end
     end
     close(fMinMax)
@@ -308,6 +328,6 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     close(fNomWorst)
 end
 # (fileName, steps, Gammas, per, rhos, T, n)
-test("test3", 5, [1.0], 0.7, [0.1], 24, 5)
+test("test3", 1, [1.0], 0.7, [0.1], 24, 5)
 
 redirect_stdout(stdout)
