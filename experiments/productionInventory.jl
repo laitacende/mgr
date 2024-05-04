@@ -8,32 +8,32 @@ import Base.stderr
 redirect_stdout(open("/dev/null", "w"))
 # TODO różne informacje dla adjustable
 function checkConstraints(A, B, b, dict, n, k, mode)
-#     bad = 0
-#     all = size(A)[1]
-#     for i in 1:(size(A)[1])
-#         # min max
-#         if mode == 0 && !(sum(A[i, j] * dict[:x][j] for j in 1:n) <= b[i])
-#             bad += 1
-#         # light robustness
-#         elseif mode == 1 && !(sum(A[i, j] * dict[:x][j] for j in 1:n) <= b[i])
-#             bad += 1
-#         # adjustable
-#         elseif mode == 2
-#              res1 = sum(B[i, j] * dict[:y][j] for j in 1:k)
-# #              if !()
-# #                 bad += 1
-# #              end
-#         end
-#     end
-#     return bad / all
-return 0
+    bad = 0
+    all = size(A)[1]
+    for i in 1:(size(A)[1])
+        # min max
+        if mode == 0 && !(sum(A[i, j] * dict[:x][j] for j in 1:n) <= b[i])
+            bad += 1
+        # light robustness
+        elseif mode == 1 && !(sum(A[i, j] * dict[:x][j] for j in 1:n) <= b[i])
+            bad += 1
+        # adjustable
+        elseif mode == 2
+             res1 = sum(B[i, j] * dict[:y][j] for j in 1:k)
+             if !(sum(A[i, j] * dict[:x][j] for j in 1:n) + res1 <= b[i])
+                bad += 1
+             end
+        end
+    end
+    return bad / all
+# return 0
 end
 
 
 function test(fileName, steps, Gammas, per, rhos, T, n)
     tmp = abs(rand(Int))
     println(stderr, tmp)
-    Random.seed!(8443422321741948758)
+    Random.seed!(8288897616298075162)
 # 1353344747400700187
 # 6087208597166880550
 # 8288897616298075162 <- fajne
@@ -51,10 +51,9 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     for t in 1:length(c)
         c[t] += rand((Uniform(0, 100)))
     end
-    println(stderr, " c " * string(c))
 
     # maximum nad minimum storage at warehause
-    VMax = rand(Uniform(1000, 100000))
+    VMax = rand(Uniform(1000, 10000))
     VMin = rand(Uniform(0, 100))
     # total production of factory accumulated over time
     Cap = spzeros(n)
@@ -207,7 +206,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
         # uncertainty
         dU = spzeros(T)
         for r in 1:length(dU)
-            dU[r] = rand(Uniform(0, d[r] * per))
+            dU[r] = rand(Uniform(d[r] * 0.2 * per, d[r] * per))
         end
 
         # sumy cząstkowe d i du
@@ -289,7 +288,7 @@ end
             bMU = [spzeros(length(Cap)); dUSum; -dUSum; spzeros(length(P) + 2)]
             model1, dict1, obj1 = robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, bMU, false, false, false)
             time = @elapsed robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, bMU, false, false, false)
-            constraints = checkConstraints(A, [], b, dict1, n * n, 0, 0)
+            constraints = checkConstraints(A, [], b, dict1,  n * T + 1, 0, 0)
 #             write(fMinMax, string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
             print(stderr, "minmax " * string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
 
@@ -297,7 +296,7 @@ end
             for j in 1:length(rhos)
                 model2, dict2, obj2 =  robustOpt.lightRobustnessMin(sparse([c; 0]), b, A, Gamma, [z bMU], rhos[j], false, false, false)
                 time = @elapsed robustOpt.lightRobustnessMin(sparse([c; 0]), b, A, Gamma, [z bMU], rhos[j], false, false, false)
-                constraints = checkConstraints(A, [], b, dict2, n * n, 0, 1)
+                constraints = checkConstraints(A, [], b, dict2,  n * T + 1, 0, 1)
                 if j == length(rhos)
 #                     write(fLight, string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
                     print(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
@@ -314,7 +313,7 @@ end
             bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
             model3, dict3, obj3 = robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
             time = @elapsed robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
-            constraints = checkConstraints(A, [], b, dict3, n * n, 0, 0)
+            constraints = checkConstraints(AA, B, bA, dict3, n + 2, (n) * (T - 1), 2)
 #             write(fAdj, string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
             print(stderr, "adj " *  string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
             println(stderr, "x "  * string(dict3[:x]))
