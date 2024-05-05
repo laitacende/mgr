@@ -3,8 +3,8 @@
     uncertainty only on right sides vector b
     b - right sides vector
     c - costs vector
-    A - nominal values for constraint matrix
-    D - constraint matrix for wait and see variables
+    A - nominal values for constraint matrix (variables symbol 'x')
+    D - constraint matrix for wait and see variables (symbol 'y')
     Gamma - budget of uncertainty (discrete)
     bU - uncertainties for vector b
     zeroQ - indices of matrix Q which are to be set to 0 in form of tuples (row, column)
@@ -105,9 +105,9 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
         println(model)
     end
     optimize!(model)
-#     if printSolution
-#         printAdjustable(model, n, x, d, q, AU, J)
-#     end
+    if printSolution
+        printAdjustable(model, n, k, x, y)
+    end
 
     d = Dict(
         k => value.(v) for
@@ -116,29 +116,21 @@ function adjustableMinB(c::Union{Vector, SparseVector, SparseMatrixCSC},
 
 end
 
-# function printAdjustable(model, n, x, d, q, AU, J)
-#     if termination_status(model) == OPTIMAL
-#        println("Solution is optimal")
-#     elseif termination_status(model) == TIME_LIMIT && has_values(model)
-#        println("Solution is suboptimal due to a time limit, but a primal solution is available")
-#     else
-#        error("The model was not solved correctly.")
-#     end
-#     println("  objective value = ", objective_value(model))
-#     if primal_status(model) == FEASIBLE_POINT
-#         for j in 1:n
-#             println("  x", j, " = ", value(x[j]))
-#         end
-#         for i in 1:n
-#             if length(J[i] > 0)
-#                 tmp = 0
-#                 for j in J[i]
-#                     tmp +=
-#                 end
-#                 println("  d", i, " = ", value(d[i]) + tmp)
-#             else
-#                 println("  d", i, " = ", value(d[i]))
-#             end
-#         end
-#     end
-# end
+function printAdjustable(model, n, k, x, y)
+    if termination_status(model) == OPTIMAL
+       println("Solution is optimal")
+    elseif termination_status(model) == TIME_LIMIT && has_values(model)
+       println("Solution is suboptimal due to a time limit, but a primal solution is available")
+    else
+       error("The model was not solved correctly.")
+    end
+    println("  objective value = ", objective_value(model))
+    if primal_status(model) == FEASIBLE_POINT
+        for j in 1:n
+            println("  x", j, " = ", value(x[j]))
+        end
+        for i in 1:k
+            println("  y", i, " = ", value(y[i]))
+        end
+    end
+end

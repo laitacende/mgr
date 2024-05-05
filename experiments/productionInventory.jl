@@ -33,7 +33,7 @@ end
 function test(fileName, steps, Gammas, per, rhos, T, n)
     tmp = abs(rand(Int))
     println(stderr, tmp)
-    Random.seed!(8288897616298075162)
+    Random.seed!(tmp)
 # 1353344747400700187
 # 6087208597166880550
 # 8288897616298075162 <- fajne
@@ -252,9 +252,9 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
             # nominal
             model0, dict0, obj0 = robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
             time = @elapsed robustOpt.nominal(c, [Cap; vmNom; vmaNom; P], ANom, false, false)
-            write(fNom, string(obj0) * " " * string(time) * "\n")
-#             println(stderr, "nom " * string(obj0) * " " * string(time))
-#             println(stderr, dict0[:x])
+#             write(fNom, string(obj0) * " " * string(time) * "\n")
+            println(stderr, "nom " * string(obj0) * " " * string(time))
+            println(stderr, dict0[:x])
         end
 
 
@@ -263,21 +263,22 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
         vmaNomW = [VMax - v1 + dSum[i] + dUSum[i] for i in 1:T]
         model01, dict01, obj01 = robustOpt.nominal(c, [Cap; vmNomW; vmaNomW; P], ANom, false, false)
         time = @elapsed robustOpt.nominal(c, [Cap; vmNomW; vmaNomW; P], ANom, false, false)
-        write(fNomWorst, string(obj01) * " " * string(time) * "\n")
-#         print(stderr,"worst " * string(obj01) * " " * string(time) * "\n")
+#         write(fNomWorst, string(obj01) * " " * string(time) * "\n")
+        print(stderr,"worst " * string(obj01) * " " * string(time) * "\n")
 
         for g in Gammas
             Gamma = spzeros(size(A)[1])
             for i in (n + 1):(n + T + T)
                 Gamma[i] = g
             end
+            #=
             # min max
             bMU = [spzeros(length(Cap)); dUSum; -dUSum; spzeros(length(P) + 2)]
             model1, dict1, obj1 = robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, bMU, false, false, false)
             time = @elapsed robustOpt.minmax(sparse([c; 0]), [], [], b, A, Gamma, J, bMU, false, false, false)
             constraints = checkConstraints(A, [], b, dict1,  n * T + 1, 0, 0)
-            write(fMinMax, string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
-#             print(stderr, "minmax " * string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
+#             write(fMinMax, string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
+            print(stderr, "minmax " * string(g) * " " * string(obj1) * " " * string(constraints) * " " * string(time) * "\n")
 
             # light robustness
             for j in 1:length(rhos)
@@ -285,26 +286,27 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
                 time = @elapsed robustOpt.lightRobustnessMin(sparse([c; 0]), b, A, Gamma, [z bMU], rhos[j], false, false, false)
                 constraints = checkConstraints(A, [], b, dict2,  n * T + 1, 0, 1)
                 if j == length(rhos)
-                    write(fLight, string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
-#                     print(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
+#                     write(fLight, string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
+                    print(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * "\n")
                 else
-                   write(fLight, string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
-#                    println(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
+#                    write(fLight, string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
+                   println(stderr, "light " * string(g) * " " * string(obj2) * " " * string(constraints) * " " * string(time) * " ")
                 end
             end
 #             display(A)
 #             display(AA)
 #             display(B)
+=#
             # adjustable
             bA = sparse([0; Cap; -dSum; dSum; P; [1]; [-1]])
             bAU = sparse([spzeros(1 + n); -dUSum; dUSum; spzeros(n*T); 0; 0])
             model3, dict3, obj3 = robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
             time = @elapsed robustOpt.adjustableMinB(sparse([zeros(n); [1]; [0]]), bA, AA, B, g, bAU, zeroQ, false, false)
             constraints = checkConstraints(AA, B, bA, dict3, n + 2, (n) * (T - 1), 2)
-            write(fAdj, string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
-#             print(stderr, "adj " *  string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
-#             println(stderr, "x "  * string(dict3[:x]))
-#             println(stderr, "y " * string(dict3[:y]))
+#             write(fAdj, string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
+            print(stderr, "adj " *  string(g) * " " * string(obj3) * " " * string(constraints) * " " * string(time) * "\n")
+            println(stderr, "x "  * string(dict3[:x]))
+            println(stderr, "y " * string(dict3[:y]))
        end
     end
     close(fMinMax)
@@ -314,7 +316,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
     close(fNomWorst)
 end
 # (fileName, steps, Gammas, per, rhos, T, n)
-test("test3", 5, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+test("test3", 1, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
 0.7, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 24, 5)
 
 redirect_stdout(stdout)

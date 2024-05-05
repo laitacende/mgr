@@ -52,9 +52,8 @@ zeroQ = []
             end
         end
     end
-println(zeroQ)
 for Gamma in Gammas
-    m, dict, opt = robustOpt.adjustableMinB(c, b, A, D, Gamma, bU, zeroQ, false, false)
+    m, dict, opt = robustOpt.adjustableMinB(c, b, A, D, Gamma, bU, zeroQ, false, true)
     println(Gamma, " ", dict)
     println(opt, " adj")
 end
