@@ -1,5 +1,10 @@
 """
 Ax <= b
+A - constraint matrix
+b - right sides vector
+c - cost vector
+printModel - when true model is printed
+printSolution - when true the solution (decision variables) is printed
 """
 function nominal(c::Union{Vector, SparseVector}, b::Union{Vector, SparseVector},
      A::Union{Matrix, Vector, SparseVector, SparseMatrixCSC}, printModel::Bool, printSolution::Bool)
