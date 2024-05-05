@@ -1,14 +1,14 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
 
-fileName = "test1"
+fileName = "test3"
 
 dfNom = CSV.read("./" * fileName * "_nom.txt", DataFrame, delim=" ", header=false)
 dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=false)
 dfAdj = CSV.read("./" * fileName * "_adj.txt", DataFrame, delim=" ", header=false)
 dfWorst = CSV.read("./" * fileName * "_nomWorst.txt", DataFrame, delim=" ", header=false)
-dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
-dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
+# dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
+# dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
 dfMM = CSV.read("./" * fileName * "_minmax.txt", DataFrame, delim=" ", header=false)
 
 x = combine(groupby(dfMM, 1), 2 => mean)[!, 1]
@@ -23,7 +23,7 @@ timeW = [wMin[2], w[2], wMax[2]]
 objectiveMM = [combine(groupby(dfMM, 1), 2 => minimum)[!, 2], combine(groupby(dfMM, 1), 2 => mean)[!, 2], combine(groupby(dfMM, 1), 2 => maximum)[!, 2]]
 timeMM = [combine(groupby(dfMM, 1), 4 => minimum)[!, 2], combine(groupby(dfMM, 1), 4 => mean)[!, 2], combine(groupby(dfMM, 1), 4 => maximum)[!, 2]]
 constraintsMM = [ combine(groupby(dfMM, 1), 3 => minimum)[!, 2], combine(groupby(dfMM, 1), 3 => mean)[!, 2], combine(groupby(dfMM, 1), 3 => maximum)[!, 2]]
-
+#=
 # recov
 KPerc =  [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 # 4 wartości dla każdego kPer
@@ -44,7 +44,7 @@ for i in 1:length(KPerc)
     append!(timeRInf, [[combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => minimum)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => mean)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 4 => maximum)[!, 2]]])
     append!(constraintsRInf, [[combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => minimum)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => mean)[!, 2], combine(groupby(dfRecovInf, 1), 4*(i - 1) + 3 => maximum)[!, 2]]])
 end
-
+=#
 # light robustness
 rhos = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 objectiveL = []
@@ -57,9 +57,9 @@ for i in 1:length(rhos)
 end
 
 # adj
-# objectiveA = [combine(groupby(dfAdj, 1), 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 2 => maximum)[!, 2], combine(groupby(dfAdj, 1), 2 => minimum)[!, 2]]
-# timeA = [combine(groupby(dfAdj, 1), 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4 => maximum)[!, 2], combine(groupby(dfAdj, 1), 4 => minimum)[!, 2]]
-# constraintsA = [combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
+objectiveA = [combine(groupby(dfAdj, 1), 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 2 => maximum)[!, 2], combine(groupby(dfAdj, 1), 2 => minimum)[!, 2]]
+timeA = [combine(groupby(dfAdj, 1), 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4 => maximum)[!, 2], combine(groupby(dfAdj, 1), 4 => minimum)[!, 2]]
+constraintsA = [combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
 
 function recovAll(fileName)
 #     p = plot(x, objectiveR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])],
@@ -266,11 +266,70 @@ function all(kperIdx, rhoIdx, fileName)
      c=[:gray65 :gray27 :gray6])
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
-    # TODO adjustable
 end
 
-recovAll("t1_recov")
-recovAllInf("t1_recov_inf")
-lightAll("t1_light")
+function allAdj(rhoIdx, fileName)
+ # nominalny
+    p = plot([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:bottomright)
+    xlabel!(p, "Γ")
+    ylabel!(p, "wartość funkcji celu")
+    # worst
+    plot!(p, [0.0, 1.0], [objectiveW[1], objectiveW[1]], label="min W", c=:palevioletred1)
+    plot!(p, [0.0, 1.0], [objectiveW[2], objectiveW[2]], label="średnia W", c=:deeppink2)
+    plot!(p, [0.0, 1.0], [objectiveW[3], objectiveW[3]], label="max W", c=:violetred4)
+    # minmax
+    plot!(p, x, objectiveMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
+    # light
+    plot!(p, x, objectiveL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
+
+    # adjustable
+    plot!(p, x, objectiveA, labels=["min A" "średnia A" "max A"], c=[:coral1 :red1 :darkred])
+
+    savefig(p, fileName * "_obj.png")
+    savefig(p, fileName * "_obj.pdf")
+
+    p = plot([0.0, 1.0], [dfNom[!, 2][1], dfNom[!, 2][1]], label="Nom", title="Czas", c=:turquoise, legend=:bottomright)
+    xlabel!(p, "Γ")
+    ylabel!(p, "czas, s")
+    # worst
+    plot!(p, [0.0, 1.0], [timeW[1], timeW[1]], label="min W", c=:palevioletred1)
+    plot!(p, [0.0, 1.0], [timeW[2], timeW[2]], label="średnia W", c=:deeppink2)
+    plot!(p, [0.0, 1.0], [timeW[3], timeW[3]], label="max W", c=:violetred4)
+#     minmax
+    plot!(p, x, timeMM, labels=["min MM" "średnia MM" "max MM"], c=[:skyblue2 :dodgerblue2 :midnightblue])
+    # light
+    plot!(p, x, timeL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
+    # adjustable
+    plot!(p, x, timeA,
+    labels=["min A" "średnia A" "max A"],
+    c=[:coral1 :red1 :darkred])
+
+    savefig(p, fileName * "_time.png")
+    savefig(p, fileName * "_time.pdf")
+
+    p = plot(x, constraintsMM, labels=["min MM" "średnia MM" "max MM"], title="Liczba naruszonych ograniczeń",
+    c=[:skyblue2 :dodgerblue2 :midnightblue], legend=:bottomright)
+    xlabel!(p, "Γ")
+    ylabel!(p, "naruszone ograniczenia, %")
+    # light
+    plot!(p, x, constraintsL[rhoIdx],
+    labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
+    c=[:olivedrab1 :limegreen :darkgreen])
+    # adjustable
+    plot!(p, x, constraintsA,
+    labels=["min A" "średnia A" "max A"],
+     c=[:coral1 :red1 :darkred])
+    savefig(p, fileName * "_constraints.png")
+    savefig(p, fileName * "_constraints.pdf")
+end
+
+# recovAll("t1_recov")
+# recovAllInf("t1_recov_inf")
+# lightAll("t3_light")
 # all(kperIdx, rhoIdx, fileName)
-all(5, 3, "t1")
+# all(5, 3, "t1")
+allAdj(3, "t3")
