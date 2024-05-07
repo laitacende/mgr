@@ -57,9 +57,9 @@ for i in 1:length(rhos)
 end
 
 # adj
-objectiveA = [combine(groupby(dfAdj, 1), 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 2 => maximum)[!, 2], combine(groupby(dfAdj, 1), 2 => minimum)[!, 2]]
-timeA = [combine(groupby(dfAdj, 1), 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4 => maximum)[!, 2], combine(groupby(dfAdj, 1), 4 => minimum)[!, 2]]
-constraintsA = [combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
+objectiveA = [combine(groupby(dfAdj, 1), 2 => minimum)[!, 2], combine(groupby(dfAdj, 1), 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 2 => maximum)[!, 2]]
+timeA = [combine(groupby(dfAdj, 1), 4 => minimum)[!, 2], combine(groupby(dfAdj, 1), 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4 => maximum)[!, 2]]
+constraintsA = [combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
 
 function recovAll(fileName)
 #     p = plot(x, objectiveR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])],
