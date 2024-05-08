@@ -52,6 +52,22 @@ zeroQ = []
             end
         end
     end
+# v min
+    for k in 1:n
+        for j in 1:(T - 1)
+            for i in 1:j
+                append!(zeroQ, [((k - 1) * (T - 1) + j, n + i + 1)])
+            end
+        end
+    end
+    # v max
+    for k in 1:n
+        for j in 1:(T - 1)
+            for i in 1:j
+               append!(zeroQ, [((k - 1) * (T - 1) + j, n + T + i + 1)])
+            end
+        end
+    end
 for Gamma in Gammas
     m, dict, opt = robustOpt.adjustableMinB(c, b, A, D, Gamma, bU, zeroQ, false, true)
     println(Gamma, " ", dict)

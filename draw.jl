@@ -1,7 +1,7 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 
 
-fileName = "test3"
+fileName = "test4"
 
 dfNom = CSV.read("./" * fileName * "_nom.txt", DataFrame, delim=" ", header=false)
 dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=false)
@@ -57,9 +57,48 @@ for i in 1:length(rhos)
 end
 
 # adj
-objectiveA = [combine(groupby(dfAdj, 1), 2 => minimum)[!, 2], combine(groupby(dfAdj, 1), 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 2 => maximum)[!, 2]]
-timeA = [combine(groupby(dfAdj, 1), 4 => minimum)[!, 2], combine(groupby(dfAdj, 1), 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4 => maximum)[!, 2]]
-constraintsA = [combine(groupby(dfAdj, 1), 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 3 => maximum)[!, 2]]
+# 1 dzien, 8 dni, 4 wstecz znamy, 0 - znamy tylko ten dzień, 10 - nie nzmay przyszlosci, -10 wiemy wszystko
+hist = [8, 4, 0, 1, 10, -10]
+namesHist = ["8", "4", "1", "0", "past", "all"]
+objectiveA = []
+timeA = []
+constraintsA = []
+for i in 1:length(hist)
+    append!(objectiveA, [[combine(groupby(dfAdj, 1), 4*(i-1) + 2 => minimum)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 2 => mean)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 2 => maximum)[!, 2]]])
+    append!(timeA, [[combine(groupby(dfAdj, 1), 4*(i-1) + 4 => minimum)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 4 => mean)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 4 => maximum)[!, 2]]])
+    append!(constraintsA, [[combine(groupby(dfAdj, 1), 4*(i-1) + 3 => minimum)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 3 => mean)[!, 2], combine(groupby(dfAdj, 1), 4*(i-1) + 3 => maximum)[!, 2]]])
+end
+
+function adjAll(fileName)
+    p = plot(x, objectiveA[1][2], label="średnia " * namesHist[1],
+    title="Wartość funkcji celu")
+    xlabel!(p, "Γ")
+    ylabel!(p, "wartość funkcji celu")
+    for i in 2:length(hist)
+        plot!(p, x, objectiveA[i][2], label="średnia " * namesHist[i])
+    end
+    savefig(p, fileName * "_obj.png")
+    savefig(p, fileName * "_obj.pdf")
+
+    p = plot(x, timeA[1][2], label="średnia " * namesHist[1], title="Czas" )
+    xlabel!(p, "Γ")
+    ylabel!(p, "czas, s")
+    for i in 2:length(namesHist)
+        plot!(p, x, timeA[i][2], label="średnia " * namesHist[i])
+    end
+    savefig(p, fileName * "_time.png")
+    savefig(p, fileName * "_time.pdf")
+
+    p = plot(x, constraintsA[1][2], label="średnia " * namesHist[1],
+    title="Liczba naruszonych ograniczeń" )
+    xlabel!(p, "Γ")
+    ylabel!(p, "naruszone ograniczenia, %")
+    for i in 2:length(namesHist)
+        plot!(p, x, constraintsA[i][2], label="średnia " * namesHist[i])
+    end
+    savefig(p, fileName * "_constraints.png")
+    savefig(p, fileName * "_constraints.pdf")
+end
 
 function recovAll(fileName)
 #     p = plot(x, objectiveR[1], labels=["min " * string(KPerc[1]) "średnia " * string(KPerc[1]) "max " * string(KPerc[1])],
@@ -268,7 +307,7 @@ function all(kperIdx, rhoIdx, fileName)
     savefig(p, fileName * "_constraints.pdf")
 end
 
-function allAdj(rhoIdx, fileName)
+function allAdj(rhoIdx, adjIdx, fileName)
  # nominalny
     p = plot([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:bottomright)
     xlabel!(p, "Γ")
@@ -285,7 +324,8 @@ function allAdj(rhoIdx, fileName)
     c=[:olivedrab1 :limegreen :darkgreen])
 
     # adjustable
-    plot!(p, x, objectiveA, labels=["min A" "średnia A" "max A"], c=[:coral1 :red1 :darkred])
+    plot!(p, x, objectiveA[adjIdx],
+    labels=["min A " * namesHist[adjIdx] "średnia A " * namesHist[adjIdx] "max A " * namesHist[adjIdx]], c=[:coral1 :red1 :darkred])
 
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
@@ -304,8 +344,8 @@ function allAdj(rhoIdx, fileName)
     labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
     c=[:olivedrab1 :limegreen :darkgreen])
     # adjustable
-    plot!(p, x, timeA,
-    labels=["min A" "średnia A" "max A"],
+    plot!(p, x, timeA[adjIdx],
+    labels=["min A " * namesHist[adjIdx]  "średnia A "* namesHist[adjIdx] "max A "* namesHist[adjIdx]],
     c=[:coral1 :red1 :darkred])
 
     savefig(p, fileName * "_time.png")
@@ -320,8 +360,8 @@ function allAdj(rhoIdx, fileName)
     labels=["min L" * string(rhos[rhoIdx]) "średnia L" * string(rhos[rhoIdx]) "max L" * string(rhos[rhoIdx])],
     c=[:olivedrab1 :limegreen :darkgreen])
     # adjustable
-    plot!(p, x, constraintsA,
-    labels=["min A" "średnia A" "max A"],
+    plot!(p, x, constraintsA[adjIdx],
+    labels=["min A " * namesHist[adjIdx] "średnia A " * namesHist[adjIdx] "max A " * namesHist[adjIdx]],
      c=[:coral1 :red1 :darkred])
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
@@ -329,7 +369,8 @@ end
 
 # recovAll("t1_recov")
 # recovAllInf("t1_recov_inf")
-# lightAll("t3_light")
+lightAll("t4_light")
+adjAll("t4_adj")
 # all(kperIdx, rhoIdx, fileName)
 # all(5, 3, "t1")
-allAdj(3, "t3")
+# allAdj(1, 1, "t3")
