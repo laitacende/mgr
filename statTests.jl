@@ -1,13 +1,13 @@
 using CSV, DataFrames, DelimitedFiles, HypothesisTests, Statistics
 
-fileName = "test1"
+fileName = "test4"
 
 dfNom = CSV.read("./" * fileName * "_nom.txt", DataFrame, delim=" ", header=false)
 dfLight = CSV.read("./" * fileName * "_light.txt", DataFrame, delim=" ", header=false)
-# dfAdj = CSV.read("./" * fileName * "_adj.txt", DataFrame, delim=" ", header=false)
+dfAdj = CSV.read("./" * fileName * "_adj.txt", DataFrame, delim=" ", header=false)
 dfWorst = CSV.read("./" * fileName * "_nomWorst.txt", DataFrame, delim=" ", header=false)
-dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
-dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
+# dfRecov = CSV.read("./" * fileName * "_recov.txt", DataFrame, delim=" ", header=false)
+# dfRecovInf = CSV.read("./" * fileName * "_recov_inf.txt", DataFrame, delim=" ", header=false)
 dfMM = CSV.read("./" * fileName * "_minmax.txt", DataFrame, delim=" ", header=false)
 
 # podsumuj recoverable
@@ -17,23 +17,28 @@ function meanRow(row, plus)
     return mean(skipmissing(vals))  # Skip missing values if any
 end
 
-meansO = Float64[]
-meansC = Float64[]
-meansOI = Float64[]
-meansCI = Float64[]
-for row in eachrow(dfRecov)
-    push!(meansO, meanRow(row, 0))
-    push!(meansC, meanRow(row, 1))
+function meanRowA(row, plus)
+    vals = row[[2 + plus, 6 + plus, 10 + plus, 14 + plus, 18 + plus, 22 + plus]]
+    return mean(skipmissing(vals))  # Skip missing values if any
 end
-dfRecov[!, 2] = meansO
-dfRecov[!, 3] = meansC
 
-for row in eachrow(dfRecovInf)
-    push!(meansOI, meanRow(row, 0))
-    push!(meansCI, meanRow(row, 1))
-end
-dfRecovInf[!, 2] = meansOI
-dfRecovInf[!, 3] = meansCI
+# meansO = Float64[]
+# meansC = Float64[]
+# meansOI = Float64[]
+# meansCI = Float64[]
+# for row in eachrow(dfRecov)
+#     push!(meansO, meanRow(row, 0))
+#     push!(meansC, meanRow(row, 1))
+# end
+# dfRecov[!, 2] = meansO
+# dfRecov[!, 3] = meansC
+#
+# for row in eachrow(dfRecovInf)
+#     push!(meansOI, meanRow(row, 0))
+#     push!(meansCI, meanRow(row, 1))
+# end
+# dfRecovInf[!, 2] = meansOI
+# dfRecovInf[!, 3] = meansCI
 
 # podsumuj light robustness
 meansOL = Float64[]
@@ -45,11 +50,18 @@ end
 dfLight[!, 2] = meansOL
 dfLight[!, 3] = meansCL
 # podsumuj adjustable
-
-dfs = [dfLight, dfRecov, dfMM, dfRecovInf]
-names = ["light robustness", "recoverable", "min-max", "recoverable inf"]
-# dfs = [dfLight, dfMM, dfAdj]
-# names= ["light robustness", "min-max", "adjustable"]
+meansOA = Float64[]
+meansCA = Float64[]
+for row in eachrow(dfAdj)
+    push!(meansOA, meanRowA(row, 0))
+    push!(meansCA, meanRowA(row, 1))
+end
+dfAdj[!, 2] = meansOA
+dfAdj[!, 3] = meansCA
+# dfs = [dfLight, dfRecov, dfMM, dfRecovInf]
+# names = ["light robustness", "recoverable", "min-max", "recoverable inf"]
+dfs = [dfLight, dfMM, dfAdj]
+names= ["light robustness", "min-max", "adjustable"]
 
 fOM = open("./" * fileName * "_median_obj.txt", "w")
 fCM = open("./" * fileName * "_median_constraints.txt", "w")

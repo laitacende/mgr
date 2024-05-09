@@ -58,8 +58,8 @@ end
 
 # adj
 # 1 dzien, 8 dni, 4 wstecz znamy, 0 - znamy tylko ten dzień, 10 - nie nzmay przyszlosci, -10 wiemy wszystko
-hist = [8, 4, 0, 1, 10, -10]
-namesHist = ["8", "4", "1", "0", "past", "all"]
+hist = [8, 4, 1, 0, 10, -10]
+namesHist = ["7", "3", "1", "0", "past", "all"]
 objectiveA = []
 timeA = []
 constraintsA = []
@@ -94,7 +94,9 @@ function adjAll(fileName)
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     for i in 2:length(namesHist)
+     if namesHist[i] != "all" && namesHist[i] != "1" && namesHist[i] != "0"
         plot!(p, x, constraintsA[i][2], label="średnia " * namesHist[i])
+        end
     end
     savefig(p, fileName * "_constraints.png")
     savefig(p, fileName * "_constraints.pdf")
@@ -309,7 +311,7 @@ end
 
 function allAdj(rhoIdx, adjIdx, fileName)
  # nominalny
-    p = plot([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:bottomright)
+    p = plot([0.0, 1.0], [dfNom[!, 1][1], dfNom[!, 1][1]], label="Nom", title="Wartość funkcji celu", c=:turquoise, legend=:topleft)
     xlabel!(p, "Γ")
     ylabel!(p, "wartość funkcji celu")
     # worst
@@ -330,7 +332,7 @@ function allAdj(rhoIdx, adjIdx, fileName)
     savefig(p, fileName * "_obj.png")
     savefig(p, fileName * "_obj.pdf")
 
-    p = plot([0.0, 1.0], [dfNom[!, 2][1], dfNom[!, 2][1]], label="Nom", title="Czas", c=:turquoise, legend=:bottomright)
+    p = plot([0.0, 1.0], [dfNom[!, 2][1], dfNom[!, 2][1]], label="Nom", title="Czas", c=:turquoise, legend=:topleft)
     xlabel!(p, "Γ")
     ylabel!(p, "czas, s")
     # worst
@@ -352,7 +354,7 @@ function allAdj(rhoIdx, adjIdx, fileName)
     savefig(p, fileName * "_time.pdf")
 
     p = plot(x, constraintsMM, labels=["min MM" "średnia MM" "max MM"], title="Liczba naruszonych ograniczeń",
-    c=[:skyblue2 :dodgerblue2 :midnightblue], legend=:bottomright)
+    c=[:skyblue2 :dodgerblue2 :midnightblue], legend=:topleft)
     xlabel!(p, "Γ")
     ylabel!(p, "naruszone ograniczenia, %")
     # light
@@ -369,8 +371,9 @@ end
 
 # recovAll("t1_recov")
 # recovAllInf("t1_recov_inf")
-lightAll("t4_light")
-adjAll("t4_adj")
+# lightAll("t4_light")
+# adjAll("t4_adj")
 # all(kperIdx, rhoIdx, fileName)
 # all(5, 3, "t1")
-# allAdj(1, 1, "t3")
+# (rhoIdx, adjIdx, fileName)
+allAdj(2, 5, "t4")

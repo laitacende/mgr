@@ -199,7 +199,7 @@ function test(fileName, steps, Gammas, per, rhos, T, n)
         J[i] = [n*T + 1]
     end
 
-    Random.seed!(987456123)
+    Random.seed!(123456789)
     for s in 1:steps
         println(stderr, s)
         # uncertainty
@@ -347,4 +347,5 @@ end
 test("test4", 100, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
 0.7, [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], 24, 5)
 # 100 dla Random.seed!(987456123)
+# 100 dla Random.seed!(123456789)
 redirect_stdout(stdout)
