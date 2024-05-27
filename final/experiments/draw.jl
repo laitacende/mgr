@@ -1,7 +1,7 @@
 using Plots, CSV, DataFrames, DelimitedFiles, Statistics
 using LaTeXStrings
 
-function adjAll(fileName, objectiveA, timeA, constraintsA, x)
+function adjAll(fileName, objectiveA, timeA, constraintsA, namesHist, hist, x)
     p = plot(x, objectiveA[1][2], label="średnia " * namesHist[1],
     title="Wartość funkcji celu")
     xlabel!(p, "Γ")
@@ -363,8 +363,8 @@ function drawProd(fileName, fileNameOut, rhoIdx, adjIdx)
     end
 
     lightAll(fileNameOut * "_light", objectiveL, timeL, constraintsL, rhos, x)
-    adjAll(fileNameOut * "_adj", objectiveA, timeA, constraintsA, namesHist, x)
-    allAdj(rhoIdx, adjIdx, fileNameOut, objectiveW, timeW,
+    adjAll(fileNameOut * "_adj", objectiveA, timeA, constraintsA, namesHist, hist, x)
+    allAdj(rhoIdx, adjIdx, fileName, dfNom, objectiveW, timeW,
     objectiveMM, timeMM, constraintsMM, objectiveA, timeA, constraintsA,
      objectiveL, timeL, constraintsL, rhos, namesHist, x)
 end
